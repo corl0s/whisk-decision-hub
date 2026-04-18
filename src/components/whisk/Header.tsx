@@ -1,4 +1,4 @@
-import { ChefHat, LineChart, Activity, CloudSun, GraduationCap, Trophy, LogOut } from "lucide-react";
+import { ChefHat, LineChart, Activity, CloudSun, GraduationCap, LogOut } from "lucide-react";
 import { ShiftDatePicker } from "./ShiftDatePicker";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -67,7 +67,6 @@ export const Header = ({ view, onViewChange }: HeaderProps) => {
 
         {/* Active signals + date picker */}
         <div className="flex items-center gap-2">
-          <SignalBadge icon={Trophy} label="Event" value="Boston Marathon" tone="accent" />
           <SignalBadge icon={CloudSun} label="Weather" value="Clear 58°F" />
           <SignalBadge icon={GraduationCap} label="Academic" value="Semester Active" />
           <ShiftDatePicker />

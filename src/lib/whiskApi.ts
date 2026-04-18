@@ -38,6 +38,12 @@ export interface PredictResponse {
     predictedTotal: number;
     upliftOrders: number;
     eventActive: boolean;
+    model?: {
+      version: string;
+      trees: number;
+      trainedAt: string;
+      valMape?: number;
+    };
   };
 }
 

@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 import { Header } from "@/components/whisk/Header";
 import { KitchenView } from "@/components/whisk/KitchenView";
 import { ManagerView } from "@/components/whisk/ManagerView";
 import { IntelligenceSidebar } from "@/components/whisk/IntelligenceSidebar";
 import { PredictionProvider, usePrediction } from "@/hooks/usePrediction";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Loader2, AlertCircle } from "lucide-react";
 
 type View = "kitchen" | "manager";

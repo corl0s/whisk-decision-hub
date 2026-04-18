@@ -31,47 +31,60 @@ function tempContext(tempF: number) {
   return `Cooler than typical by ${Math.abs(Math.round(diff))}°F`;
 }
 
+// Helper: phrase a contribution as "lifts demand by X%" or "drags demand by X%"
+function impactPhrase(contribution: number) {
+  const mag = Math.abs(contribution);
+  if (contribution >= 0) return `lifts demand ~${mag}%`;
+  return `drags demand ~${mag}%`;
+}
+
 function tempExplain(tempF: number, contribution: number) {
+  const impact = impactPhrase(contribution);
   if (contribution >= 0) {
     return tempF >= 70
-      ? "Warm weather lifts cold drinks and outdoor traffic"
-      : "Mild weather supports normal lunch volume";
+      ? `Warm weather ${impact} (cold drinks + outdoor traffic)`
+      : `Mild weather ${impact} (supports normal lunch volume)`;
   }
   return tempF < 50
-    ? "Cold weather suppresses cold-drink and outdoor demand"
-    : "Off-peak temps soften walk-in traffic";
+    ? `Cold weather ${impact} (suppresses cold-drink + outdoor demand)`
+    : `Off-peak temps ${impact} (softer walk-in traffic)`;
 }
 
 function precipExplain(precip: number, contribution: number) {
-  if (precip < 0.1) return "Dry conditions — no weather drag on foot traffic";
-  if (contribution >= 0) return "Light rain pushes customers indoors — slight bump";
-  return `${precip.toFixed(1)}mm rain reduces walk-ins and outdoor seating`;
+  const impact = impactPhrase(contribution);
+  if (precip < 0.1) return `Dry conditions — ${impact} on foot traffic`;
+  if (contribution >= 0) return `Light rain pushes customers indoors — ${impact}`;
+  return `${precip.toFixed(1)}mm rain ${impact} (fewer walk-ins, less patio)`;
 }
 
 function eventExplain(distanceKm: number, attendance: number, contribution: number, eventName: string) {
   const distLabel = distanceKm < 0.1 ? "right at the location" : `within ${distanceKm.toFixed(1)} km`;
+  const impact = impactPhrase(contribution);
   if (contribution >= 0) {
-    return `${eventName} draws ~${attendance.toLocaleString()} people ${distLabel} — major spectator surge`;
+    return `${eventName} draws ~${attendance.toLocaleString()} spectators ${distLabel} — ${impact}`;
   }
-  return `${eventName} street closures cut delivery access despite nearby crowds`;
+  // Negative event contribution = model learned crowd-related drag (e.g. street closures, locals avoiding area)
+  return `${eventName} crowds ${distLabel} ${impact} (street closures + locals avoiding area cap upside)`;
 }
 
 function dowExplain(dow: number, contribution: number) {
   const day = DOW_NAMES[dow] ?? "today";
   const isWeekend = dow >= 5;
+  const impact = impactPhrase(contribution);
   if (contribution >= 0) {
     return isWeekend
-      ? `${day}s typically run hotter than weekdays`
-      : `${day} matches a strong historical pattern`;
+      ? `${day}s typically run hotter than weekdays — ${impact}`
+      : `${day} matches a strong historical pattern — ${impact}`;
   }
   return isWeekend
-    ? `${day} is softer than a typical weekday for this menu`
-    : `${day}s historically run cooler than mid-week`;
+    ? `${day} is softer than a typical weekday for this menu — ${impact}`
+    : `${day}s historically run cooler than mid-week — ${impact}`;
 }
 
 function lagExplain(label: string, contribution: number) {
-  if (contribution >= 0) return `${label} ran above expectations — model expects continuation`;
-  return `${label} ran below expectations — model dampens forecast`;
+  const impact = impactPhrase(contribution);
+  if (contribution >= 0) return `${label} ran above expectations — ${impact} (model expects continuation)`;
+  return `${label} ran below expectations — ${impact} (model dampens forecast)`;
 }
 
 export function buildActiveSignals(

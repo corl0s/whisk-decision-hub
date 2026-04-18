@@ -28,7 +28,7 @@ export const PredictionProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
   // Default: Boston Marathon 2026 — keeps the demo's hero scenario intact
-  const [date, setDate] = useState<Date>(() => new Date("2026-04-21T12:00:00"));
+  const [date, setDate] = useState<Date>(() => new Date("2026-04-20T12:00:00"));
   const [shift, setShift] = useState<ShiftId>("lunch");
 
   const isoDate = useMemo(() => toIso(date), [date]);

@@ -293,7 +293,28 @@ Deno.serve(async (req) => {
       inventory,
       featureContribution,
       activeSignals,
-      savings: { wastePreventedWeek: 340, projectedMonthly: 2800, co2OffsetKg: 420 },
+      savings: (() => {
+        // Real waste-prevented calc: |predicted − typical| units per item, valued
+        // at item cost + CO₂ factor. Represents the prep error the kitchen avoids
+        // by following the forecast vs. blindly cooking to baseline.
+        let unitsShift = 0, dollarsShift = 0, co2Shift = 0;
+        for (const m of (menu ?? []) as any[]) {
+          const cells = grid[m.id];
+          const pred = shiftIdxs.reduce((s, i) => s + cells[i].predicted, 0);
+          const typical = Number(m.baseline_hourly_demand) * SHIFT_HOURS.length;
+          const delta = Math.abs(pred - typical);
+          unitsShift += delta;
+          dollarsShift += delta * Number(m.cost_per_unit ?? 3.5);
+          co2Shift += delta * Number(m.co2_per_unit ?? 1.2);
+        }
+        // Project: 1 shift × ~14 shifts/week (2 main shifts × 7 days)
+        const weekMult = 14;
+        return {
+          wastePreventedWeek: Math.round(unitsShift * weekMult),
+          projectedMonthly:   Math.round(dollarsShift * weekMult * 4.3),
+          co2OffsetKg:        Math.round(co2Shift * weekMult),
+        };
+      })(),
       aiBriefing,
       meta: {
         predictedTotal,

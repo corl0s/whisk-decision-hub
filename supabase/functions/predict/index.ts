@@ -243,8 +243,8 @@ Deno.serve(async (req) => {
           event: activeEvent
             ? { name: activeEvent.name, status: "Active", distanceKm: Number(activeDistance.toFixed(2)) }
             : { name: "None", status: "Inactive", distanceKm: 0 },
-          weather: { condition: "Clear", tempF: 58 },
-          academic: { status: "Semester Active" },
+          weather: weatherDay.summary,
+          academic: { status: holiday ? "Holiday" : "Semester Active" },
         },
       },
       demandSeries,

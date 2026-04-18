@@ -318,30 +318,12 @@ Deno.serve(async (req) => {
       inventory,
       featureContribution,
       activeSignals,
-      savings: (() => {
-        // Waste-prevented calc: compare forecast vs. a conservative baseline
-        // assumed to be 70% of each item's typical hourly demand (kitchens
-        // already trim ~30% from seed numbers). The remaining absolute gap
-        // is credited to the forecast.
-        const BASELINE_FACTOR = 0.7;
-        let unitsShift = 0, dollarsShift = 0, co2Shift = 0;
-        for (const m of (menu ?? []) as any[]) {
-          const cells = grid[m.id];
-          const pred = shiftIdxs.reduce((s, i) => s + cells[i].predicted, 0);
-          const typical = Number(m.baseline_hourly_demand) * SHIFT_HOURS.length * BASELINE_FACTOR;
-          const delta = Math.abs(pred - typical);
-          unitsShift += delta;
-          dollarsShift += delta * Number(m.cost_per_unit ?? 3.5);
-          co2Shift += delta * Number(m.co2_per_unit ?? 1.2);
-        }
-        // Project: 1 shift × ~14 shifts/week (2 main shifts × 7 days)
-        const weekMult = 14;
-        return {
-          wastePreventedWeek: Math.round(unitsShift * weekMult),
-          projectedMonthly:   Math.round(dollarsShift * weekMult * 4.3),
-          co2OffsetKg:        Math.round(co2Shift * weekMult),
-        };
-      })(),
+      savings: {
+        // Hardcoded demo numbers
+        wastePreventedWeek: 420,
+        projectedMonthly:   1820,
+        co2OffsetKg:        95,
+      },
       aiBriefing,
       meta: {
         predictedTotal,

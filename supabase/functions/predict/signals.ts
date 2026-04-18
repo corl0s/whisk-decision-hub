@@ -113,7 +113,9 @@ export function buildActiveSignals(
         return {
           key, contribution, direction,
           feature: ctx.event.active ? `${ctx.event.name} Proximity` : "Event Proximity",
-          rawValue: ctx.event.active ? `${ctx.event.distanceKm.toFixed(1)} km away` : "No event nearby",
+          rawValue: ctx.event.active
+            ? (ctx.event.distanceKm < 0.1 ? "At the location" : `${ctx.event.distanceKm.toFixed(1)} km away`)
+            : "No event nearby",
           context: ctx.event.active ? "Within event radius" : "Out of range",
           explanation: ctx.event.active
             ? eventExplain(ctx.event.distanceKm, ctx.event.attendance, contribution, ctx.event.name)

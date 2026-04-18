@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     const locationId: string = body.location_id ?? "11111111-1111-1111-1111-111111111111";
-    const shiftDate: string = body.date ?? "2026-04-21";
+    const shiftDate: string = body.date ?? "2026-04-20";
     const shiftId: string = body.shift ?? "lunch";
     const shiftDef = SHIFTS[shiftId] ?? SHIFTS.lunch;
     const SHIFT_HOURS = shiftDef.hours;

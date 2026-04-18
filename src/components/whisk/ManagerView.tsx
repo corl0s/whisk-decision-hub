@@ -58,7 +58,7 @@ export const ManagerView = () => {
         <div className="mb-3 flex items-end justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">Impact & Savings</h1>
-            <p className="text-sm text-muted-foreground">Live for week of Apr 21, 2026 — Boylston St location.</p>
+            <p className="text-sm text-muted-foreground">Live for week of Apr 20, 2026 — Boylston St location.</p>
           </div>
         </div>
         <div className="grid gap-4 md:grid-cols-3">

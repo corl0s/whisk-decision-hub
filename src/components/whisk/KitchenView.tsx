@@ -1,4 +1,4 @@
-import { Clock, MapPin, Calendar } from "lucide-react";
+import { Clock, MapPin, Calendar, Cpu } from "lucide-react";
 import { usePrediction } from "@/hooks/usePrediction";
 import { DemandChart } from "./DemandChart";
 import { PrepCards } from "./PrepCards";
@@ -8,6 +8,7 @@ export const KitchenView = () => {
   const { data } = usePrediction();
   const scenario = data?.scenario;
   const uplift = data?.meta.upliftOrders ?? 0;
+  const model = data?.meta.model;
 
   return (
     <div className="fade-swap space-y-6">

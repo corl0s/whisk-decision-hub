@@ -19,7 +19,8 @@ export const PrepCards = () => {
       {items.map((item) => {
         const cfg = statusConfig[item.status];
         const Icon = cfg.icon;
-        const positive = item.uplift >= 0;
+        const pct = Math.round((item.ratio - 1) * 100);
+        const positive = pct >= 0;
         return (
           <div key={item.id} className={`group rounded-2xl border border-border bg-card p-5 shadow-elev-sm transition-all hover:shadow-elev-md ${cfg.ring}`}>
             <div className="flex items-start justify-between gap-2">
@@ -29,7 +30,7 @@ export const PrepCards = () => {
               </div>
               <div className={`flex items-center gap-0.5 text-xs font-semibold ${positive ? "text-success" : "text-muted-foreground"}`}>
                 {positive ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
-                {positive ? "+" : ""}{item.uplift}%
+                {positive ? "+" : ""}{pct}% vs typical
               </div>
             </div>
             <div className="mt-4">

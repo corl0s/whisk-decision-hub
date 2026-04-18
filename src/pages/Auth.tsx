@@ -19,7 +19,7 @@ export default function Auth() {
   const [busy, setBusy] = useState(false);
 
   if (loading) return null;
-  if (session) return <Navigate to="/dashboard" replace />;
+  if (session) return <Navigate to="/" replace />;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,16 +29,19 @@ export default function Auth() {
         const { error } = await supabase.auth.signUp({
           email, password,
           options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`,
+            emailRedirectTo: `${window.location.origin}/`,
             data: { restaurant_name: restaurantName || "My Restaurant" },
           },
         });
         if (error) throw error;
-        toast({ title: "Check your email", description: "Confirm your email to finish signing up." });
+        // Auto-confirm is on — sign in immediately and head to setup
+        const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInErr) throw signInErr;
+        nav("/setup");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        nav("/dashboard");
+        nav("/");
       }
     } catch (err: any) {
       toast({ title: "Auth error", description: err.message, variant: "destructive" });

@@ -72,8 +72,8 @@ export default function RestaurantSetup() {
         setup_complete: true,
       }).eq("owner_user_id", user.id);
       if (error) throw error;
-      toast({ title: "Saved", description: "Restaurant profile updated." });
-      nav("/dashboard");
+      toast({ title: "Saved", description: "Loading today's plan…" });
+      nav("/");
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {

@@ -53,6 +53,47 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_levels: {
+        Row: {
+          created_at: string
+          current_stock: number
+          id: string
+          last_counted_at: string
+          menu_item_id: string
+          par_level: number
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_stock?: number
+          id?: string
+          last_counted_at?: string
+          menu_item_id: string
+          par_level?: number
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_stock?: number
+          id?: string
+          last_counted_at?: string
+          menu_item_id?: string
+          par_level?: number
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_levels_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: true
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       locations: {
         Row: {
           address: string

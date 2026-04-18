@@ -37,6 +37,16 @@ export const KitchenView = () => {
               <span className="text-3xl font-bold text-success">{uplift >= 0 ? "+" : ""}{uplift}</span>
               <span className="text-xs font-semibold text-success">predicted orders vs. baseline</span>
             </div>
+
+            {model && (
+              <div
+                className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-background/60 px-2 py-1 text-[10px] font-medium text-muted-foreground"
+                title={`${model.trees} trees · trained ${model.trainedAt}${model.valMape ? ` · val MAPE ${model.valMape.toFixed(0)}%` : ""}`}
+              >
+                <Cpu className="h-3 w-3" />
+                Model: {model.version} · {model.trees} trees
+              </div>
+            )}
           </div>
 
           <div className="p-5">

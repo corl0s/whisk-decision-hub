@@ -198,14 +198,30 @@ Deno.serve(async (req) => {
       return { id: m.id, name: m.name, units, ratio: Number(ratio.toFixed(2)), status, note };
     });
 
-    // Inventory recs
+    // Inventory recs — driven by REAL stock from inventory_levels table
     const inventory = (menu ?? []).map((m: any) => {
       const cells = grid[m.id];
       const demand = Math.round(shiftIdxs.reduce((s, i) => s + cells[i].predicted, 0));
-      const stock = Math.round(Number(m.baseline_hourly_demand) * 2);
-      const order = demand > stock ? Math.ceil((demand - stock) / 10) * 10 : 0;
-      const risk: "low" | "high" = demand < stock * 0.5 ? "high" : "low";
-      return { item: `${m.name} Stock`, stock, demand, order, risk };
+      const inv = stockByItem[m.id];
+      // Fallback if no inventory row exists yet for this item
+      const stock = inv ? Math.round(inv.stock) : Math.round(Number(m.baseline_hourly_demand) * 2);
+      const par   = inv ? Math.round(inv.par)   : Math.round(Number(m.baseline_hourly_demand) * 6);
+      const unit  = inv?.unit ?? "units";
+      // Order to bring stock back to par AFTER covering predicted demand
+      const projected = stock - demand;
+      const order = projected < par ? Math.ceil((par - projected) / 10) * 10 : 0;
+      // Risk: high if we'll run out before the shift ends
+      const risk: "low" | "high" = stock < demand ? "high" : "low";
+      return {
+        item: m.name,
+        stock,
+        par,
+        unit,
+        demand,
+        order,
+        risk,
+        lastCounted: inv?.lastCounted ?? null,
+      };
     });
 
     // Real SHAP: aggregate across all (item, shift-hour) cells, then convert

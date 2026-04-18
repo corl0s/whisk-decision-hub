@@ -31,47 +31,60 @@ function tempContext(tempF: number) {
   return `Cooler than typical by ${Math.abs(Math.round(diff))}°F`;
 }
 
+// Helper: phrase a contribution as "lifts demand by X%" or "drags demand by X%"
+function impactPhrase(contribution: number) {
+  const mag = Math.abs(contribution);
+  if (contribution >= 0) return `lifts demand ~${mag}%`;
+  return `drags demand ~${mag}%`;
+}
+
 function tempExplain(tempF: number, contribution: number) {
+  const impact = impactPhrase(contribution);
   if (contribution >= 0) {
     return tempF >= 70
-      ? "Warm weather lifts cold drinks and outdoor traffic"
-      : "Mild weather supports normal lunch volume";
+      ? `Warm weather ${impact} (cold drinks + outdoor traffic)`
+      : `Mild weather ${impact} (supports normal lunch volume)`;
   }
   return tempF < 50
-    ? "Cold weather suppresses cold-drink and outdoor demand"
-    : "Off-peak temps soften walk-in traffic";
+    ? `Cold weather ${impact} (suppresses cold-drink + outdoor demand)`
+    : `Off-peak temps ${impact} (softer walk-in traffic)`;
 }
 
 function precipExplain(precip: number, contribution: number) {
-  if (precip < 0.1) return "Dry conditions — no weather drag on foot traffic";
-  if (contribution >= 0) return "Light rain pushes customers indoors — slight bump";
-  return `${precip.toFixed(1)}mm rain reduces walk-ins and outdoor seating`;
+  const impact = impactPhrase(contribution);
+  if (precip < 0.1) return `Dry conditions — ${impact} on foot traffic`;
+  if (contribution >= 0) return `Light rain pushes customers indoors — ${impact}`;
+  return `${precip.toFixed(1)}mm rain ${impact} (fewer walk-ins, less patio)`;
 }
 
 function eventExplain(distanceKm: number, attendance: number, contribution: number, eventName: string) {
   const distLabel = distanceKm < 0.1 ? "right at the location" : `within ${distanceKm.toFixed(1)} km`;
+  const impact = impactPhrase(contribution);
   if (contribution >= 0) {
-    return `${eventName} draws ~${attendance.toLocaleString()} people ${distLabel} — major spectator surge`;
+    return `${eventName} draws ~${attendance.toLocaleString()} spectators ${distLabel} — ${impact}`;
   }
-  return `${eventName} street closures cut delivery access despite nearby crowds`;
+  // Negative event contribution = model learned crowd-related drag (e.g. street closures, locals avoiding area)
+  return `${eventName} crowds ${distLabel} ${impact} (street closures + locals avoiding area cap upside)`;
 }
 
 function dowExplain(dow: number, contribution: number) {
   const day = DOW_NAMES[dow] ?? "today";
   const isWeekend = dow >= 5;
+  const impact = impactPhrase(contribution);
   if (contribution >= 0) {
     return isWeekend
-      ? `${day}s typically run hotter than weekdays`
-      : `${day} matches a strong historical pattern`;
+      ? `${day}s typically run hotter than weekdays — ${impact}`
+      : `${day} matches a strong historical pattern — ${impact}`;
   }
   return isWeekend
-    ? `${day} is softer than a typical weekday for this menu`
-    : `${day}s historically run cooler than mid-week`;
+    ? `${day} is softer than a typical weekday for this menu — ${impact}`
+    : `${day}s historically run cooler than mid-week — ${impact}`;
 }
 
 function lagExplain(label: string, contribution: number) {
-  if (contribution >= 0) return `${label} ran above expectations — model expects continuation`;
-  return `${label} ran below expectations — model dampens forecast`;
+  const impact = impactPhrase(contribution);
+  if (contribution >= 0) return `${label} ran above expectations — ${impact} (model expects continuation)`;
+  return `${label} ran below expectations — ${impact} (model dampens forecast)`;
 }
 
 export function buildActiveSignals(
@@ -106,8 +119,8 @@ export function buildActiveSignals(
           rawValue: ctx.weather.condition,
           context: ctx.weather.condition === "Clear" ? "Clear skies" : "Cloud cover present",
           explanation: contribution >= 0
-            ? "Clear weather draws walk-in foot traffic"
-            : "Overcast skies trim incidental walk-ins",
+            ? `Clear weather draws walk-in foot traffic — ${impactPhrase(contribution)}`
+            : `Overcast skies trim incidental walk-ins — ${impactPhrase(contribution)}`,
         };
       case "event_dist_km":
         return {
@@ -146,8 +159,8 @@ export function buildActiveSignals(
           rawValue: "Lunch shift (11a–2p)",
           context: "Peak hours window",
           explanation: contribution >= 0
-            ? "Hour-of-day pattern lifts demand at lunch peak"
-            : "Edge of peak window — softer than midday max",
+            ? `Hour-of-day pattern lifts demand at lunch peak — ${impactPhrase(contribution)}`
+            : `Edge of peak window — ${impactPhrase(contribution)}`,
         };
       case "lag_7d":
         return {
@@ -180,8 +193,8 @@ export function buildActiveSignals(
           rawValue: "Per-item learned bias",
           context: "Item-level effect",
           explanation: contribution >= 0
-            ? "Top-selling items skew demand higher today"
-            : "Item mix runs cooler today",
+            ? `Top-selling items skew demand higher today — ${impactPhrase(contribution)}`
+            : `Item mix runs cooler today — ${impactPhrase(contribution)}`,
         };
       case "cat_idx":
         return {
@@ -190,8 +203,8 @@ export function buildActiveSignals(
           rawValue: "Per-category learned bias",
           context: "Category-level effect",
           explanation: contribution >= 0
-            ? "Strong categories carry the day's demand"
-            : "Category mix is a slight drag today",
+            ? `Strong categories carry the day's demand — ${impactPhrase(contribution)}`
+            : `Category mix is a slight drag today — ${impactPhrase(contribution)}`,
         };
       default:
         return {
@@ -199,7 +212,7 @@ export function buildActiveSignals(
           feature: key,
           rawValue: "—",
           context: "Model feature",
-          explanation: contribution >= 0 ? "Lifts forecast" : "Suppresses forecast",
+          explanation: contribution >= 0 ? `Lifts forecast — ${impactPhrase(contribution)}` : `Suppresses forecast — ${impactPhrase(contribution)}`,
         };
     }
   });

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { fetchPrediction, type PredictResponse } from "@/lib/whiskApi";
 
 interface PredictionState {
@@ -6,21 +6,34 @@ interface PredictionState {
   loading: boolean;
   error: string | null;
   refresh: () => void;
+  date: Date;
+  setDate: (d: Date) => void;
 }
 
 const Ctx = createContext<PredictionState | null>(null);
+
+const toIso = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
 
 export const PredictionProvider = ({ children }: { children: ReactNode }) => {
   const [data, setData] = useState<PredictResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
+  // Default: Boston Marathon 2026 — keeps the demo's hero scenario intact
+  const [date, setDate] = useState<Date>(() => new Date("2026-04-21T12:00:00"));
+
+  const isoDate = useMemo(() => toIso(date), [date]);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetchPrediction()
+    fetchPrediction({ date: isoDate })
       .then((d) => {
         if (!cancelled) setData(d);
       })
@@ -33,10 +46,19 @@ export const PredictionProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       cancelled = true;
     };
-  }, [tick]);
+  }, [tick, isoDate]);
 
   return (
-    <Ctx.Provider value={{ data, loading, error, refresh: () => setTick((t) => t + 1) }}>
+    <Ctx.Provider
+      value={{
+        data,
+        loading,
+        error,
+        refresh: () => setTick((t) => t + 1),
+        date,
+        setDate,
+      }}
+    >
       {children}
     </Ctx.Provider>
   );

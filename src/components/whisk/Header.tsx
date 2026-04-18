@@ -1,4 +1,5 @@
 import { ChefHat, LineChart, Activity, CloudSun, GraduationCap, Trophy } from "lucide-react";
+import { ShiftDatePicker } from "./ShiftDatePicker";
 
 type View = "kitchen" | "manager";
 
@@ -55,11 +56,12 @@ export const Header = ({ view, onViewChange }: HeaderProps) => {
           </div>
         </div>
 
-        {/* Active signals */}
+        {/* Active signals + date picker */}
         <div className="flex items-center gap-2">
           <SignalBadge icon={Trophy} label="Event" value="Boston Marathon" tone="accent" />
           <SignalBadge icon={CloudSun} label="Weather" value="Clear 58°F" />
           <SignalBadge icon={GraduationCap} label="Academic" value="Semester Active" />
+          <ShiftDatePicker />
         </div>
 
         {/* Persona toggle */}

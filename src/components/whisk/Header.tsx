@@ -1,5 +1,8 @@
-import { ChefHat, LineChart, Activity, CloudSun, GraduationCap, Trophy } from "lucide-react";
+import { ChefHat, LineChart, Activity, CloudSun, GraduationCap, Trophy, LogOut } from "lucide-react";
 import { ShiftDatePicker } from "./ShiftDatePicker";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 type View = "kitchen" | "manager";
 

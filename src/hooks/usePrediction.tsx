@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { fetchPrediction, type PredictResponse } from "@/lib/whiskApi";
+import type { ShiftId } from "@/lib/shifts";
 
 interface PredictionState {
   data: PredictResponse | null;
@@ -8,6 +9,8 @@ interface PredictionState {
   refresh: () => void;
   date: Date;
   setDate: (d: Date) => void;
+  shift: ShiftId;
+  setShift: (s: ShiftId) => void;
 }
 
 const Ctx = createContext<PredictionState | null>(null);
@@ -26,6 +29,7 @@ export const PredictionProvider = ({ children }: { children: ReactNode }) => {
   const [tick, setTick] = useState(0);
   // Default: Boston Marathon 2026 — keeps the demo's hero scenario intact
   const [date, setDate] = useState<Date>(() => new Date("2026-04-21T12:00:00"));
+  const [shift, setShift] = useState<ShiftId>("lunch");
 
   const isoDate = useMemo(() => toIso(date), [date]);
 
@@ -33,7 +37,7 @@ export const PredictionProvider = ({ children }: { children: ReactNode }) => {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetchPrediction({ date: isoDate })
+    fetchPrediction({ date: isoDate, shift })
       .then((d) => {
         if (!cancelled) setData(d);
       })
@@ -46,7 +50,7 @@ export const PredictionProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       cancelled = true;
     };
-  }, [tick, isoDate]);
+  }, [tick, isoDate, shift]);
 
   return (
     <Ctx.Provider
@@ -57,6 +61,8 @@ export const PredictionProvider = ({ children }: { children: ReactNode }) => {
         refresh: () => setTick((t) => t + 1),
         date,
         setDate,
+        shift,
+        setShift,
       }}
     >
       {children}

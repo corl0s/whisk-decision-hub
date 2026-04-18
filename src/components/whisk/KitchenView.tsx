@@ -4,6 +4,7 @@ import { DemandChart } from "./DemandChart";
 import { PrepCards } from "./PrepCards";
 import { AIBriefing } from "./AIBriefing";
 import { MenuPanel } from "./MenuPanel";
+import { ShiftSelector } from "./ShiftSelector";
 
 export const KitchenView = () => {
   const { data } = usePrediction();
@@ -24,6 +25,7 @@ export const KitchenView = () => {
             </div>
             <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground md:text-3xl">Today's Outlook</h1>
             <div className="mt-1 text-3xl font-bold text-primary md:text-4xl">{scenario?.shift}</div>
+            <ShiftSelector />
 
             <div className="mt-5 space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">

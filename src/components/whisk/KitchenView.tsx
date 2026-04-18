@@ -72,7 +72,6 @@ export const KitchenView = () => {
       </section>
 
       <MenuPanel />
-      <PrepCards />
       <AIBriefing />
     </div>
   );

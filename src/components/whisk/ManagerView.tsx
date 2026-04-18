@@ -1,6 +1,7 @@
 import { CheckCircle2, AlertTriangle, Send, TrendingDown, DollarSign, Leaf, Package, Clock } from "lucide-react";
 import { forwardRef, useState } from "react";
 import { usePrediction } from "@/hooks/usePrediction";
+import { WasteLogRecorder } from "./WasteLogRecorder";
 
 function timeAgo(iso: string | null): string {
   if (!iso) return "—";
@@ -150,6 +151,8 @@ export const ManagerView = () => {
           </table>
         </div>
       </section>
+
+      <WasteLogRecorder />
     </div>
   );
 };

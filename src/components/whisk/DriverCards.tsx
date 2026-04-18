@@ -93,9 +93,10 @@ export const DriverCards = () => {
                 </div>
                 <div
                   className={`inline-flex shrink-0 items-center gap-0.5 rounded-md border px-1.5 py-0.5 text-[11px] font-bold tabular-nums ${style.chip}`}
+                  title="Share of total demand impact"
                 >
                   <Icon className="h-3 w-3" />
-                  {s.contribution >= 0 ? "+" : ""}{s.contribution}%
+                  {s.contribution >= 0 ? "+" : ""}{s.contribution}% demand
                 </div>
               </div>
 

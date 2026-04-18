@@ -22,7 +22,7 @@ export const KitchenView = () => {
               <Clock className="h-3.5 w-3.5" />
               Next Shift
             </div>
-            <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground md:text-3xl">Prep Guide</h1>
+            <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground md:text-3xl">Today's Outlook</h1>
             <div className="mt-1 text-3xl font-bold text-primary md:text-4xl">{scenario?.shift}</div>
 
             <div className="mt-5 space-y-2 text-sm text-muted-foreground">

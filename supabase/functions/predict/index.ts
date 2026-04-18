@@ -18,14 +18,14 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const MODEL_URL = `${SUPABASE_URL}/storage/v1/object/public/model-artifacts/lightgbm-v1.json`;
 
 const HOURS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
-const HOUR_LABELS = ["7a","8a","9a","10a","11a","12p","1p","2p","3p","4p","5p","6p","7p"];
+const HOUR_LABELS = ["7a", "8a", "9a", "10a", "11a", "12p", "1p", "2p", "3p", "4p", "5p", "6p", "7p"];
 
 // Shift definitions — must mirror src/lib/shifts.ts
 const SHIFTS: Record<string, { hours: number[]; display: string; short: string }> = {
-  breakfast: { hours: [7, 8, 9, 10],   display: "7:00 AM – 11:00 AM", short: "7-11a" },
-  lunch:     { hours: [11, 12, 13],    display: "11:00 AM – 2:00 PM", short: "11a-2p" },
-  afternoon: { hours: [14, 15, 16],    display: "2:00 PM – 5:00 PM",  short: "2-5p" },
-  dinner:    { hours: [17, 18, 19],    display: "5:00 PM – 8:00 PM",  short: "5-8p" },
+  breakfast: { hours: [7, 8, 9, 10], display: "7:00 AM – 11:00 AM", short: "7-11a" },
+  lunch: { hours: [11, 12, 13], display: "11:00 AM – 2:00 PM", short: "11a-2p" },
+  afternoon: { hours: [14, 15, 16], display: "2:00 PM – 5:00 PM", short: "2-5p" },
+  dinner: { hours: [17, 18, 19], display: "5:00 PM – 8:00 PM", short: "5-8p" },
 };
 
 // Cache the model in module memory (warm starts skip the fetch)
@@ -34,15 +34,17 @@ async function loadModel(): Promise<ModelArtifact> {
   if (modelCache) return modelCache;
   const r = await fetch(MODEL_URL);
   if (!r.ok) throw new Error(`model fetch failed ${r.status}`);
-  modelCache = await r.json() as ModelArtifact;
+  modelCache = (await r.json()) as ModelArtifact;
   console.log(`model loaded: ${modelCache.version} ${modelCache.n_trees} trees`);
   return modelCache;
 }
 
 function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
-  const R = 6371, toRad = (d: number) => (d * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
-  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+  const R = 6371,
+    toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1),
+    dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
@@ -75,8 +77,10 @@ Deno.serve(async (req) => {
     }
 
     if (!location) {
-      return new Response(JSON.stringify({ error: "location not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "location not found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Find nearest active event
@@ -86,7 +90,8 @@ Deno.serve(async (req) => {
       if (ev.lat == null || ev.lng == null) continue;
       const d = distanceKm(location.lat, location.lng, ev.lat, ev.lng);
       if (d <= Number(ev.radius_km) && d < activeDistance) {
-        activeEvent = ev; activeDistance = d;
+        activeEvent = ev;
+        activeDistance = d;
       }
     }
 
@@ -99,7 +104,7 @@ Deno.serve(async (req) => {
       (catToIdxs[it.category] ??= []).push(it.idx);
     }
     const catIndex: Record<string, number> = {};
-    model.categories.forEach((c, i) => catIndex[c] = i);
+    model.categories.forEach((c, i) => (catIndex[c] = i));
 
     // Run inference for every (menu_item, hour)
     type Cell = { predicted: number; baseline: number; shap: Record<string, number> };
@@ -134,20 +139,29 @@ Deno.serve(async (req) => {
         // Lag features: scaled by dow + slight jitter from precip (rainy day → lower lag)
         const precipDamp = Math.max(0.7, 1 - w.precip * 0.15);
         const lag1d = base * hourShape * dowMult * precipDamp;
-        const lag7d = base * hourShape * dowMult;            // last week, no weather
-        const lag28d = base * hourShape;                     // 4-wk avg, neutral
-        let predSum = 0, baseSum = 0;
+        const lag7d = base * hourShape * dowMult; // last week, no weather
+        const lag28d = base * hourShape; // 4-wk avg, neutral
+        let predSum = 0,
+          baseSum = 0;
         const shapAgg: Record<string, number> = {};
         for (const idx of modelIdxs) {
           const featReal = [
-            hour, dow, idx, catIndex[cat] ?? 0,
-            w.temp_f, w.precip, w.clear,
-            eventCtx.dist_km, eventCtx.attend,
-            lag7d, lag28d, lag1d,
+            hour,
+            dow,
+            idx,
+            catIndex[cat] ?? 0,
+            w.temp_f,
+            w.precip,
+            w.clear,
+            eventCtx.dist_km,
+            eventCtx.attend,
+            lag7d,
+            lag28d,
+            lag1d,
           ];
           const featBase = [...featReal];
           featBase[7] = 9.99; // event_dist_km
-          featBase[8] = 0;    // event_attend
+          featBase[8] = 0; // event_attend
 
           const real = runInference(model, featReal, true);
           const baseline = runInference(model, featBase, false);
@@ -162,8 +176,8 @@ Deno.serve(async (req) => {
         const calibration = base / 14; // model items avg base ~14
         cells.push({
           predicted: Math.max(0, predSum / n) * calibration,
-          baseline:  Math.max(0, baseSum / n) * calibration,
-          shap: Object.fromEntries(Object.entries(shapAgg).map(([k, v]) => [k, v / n * calibration])),
+          baseline: Math.max(0, baseSum / n) * calibration,
+          shap: Object.fromEntries(Object.entries(shapAgg).map(([k, v]) => [k, (v / n) * calibration])),
         });
       }
       grid[m.id] = cells;
@@ -181,7 +195,7 @@ Deno.serve(async (req) => {
     // Per-item prep recommendations for the 11a-2p shift.
     // Status & note now driven by absolute volume vs. that item's typical baseline_hourly_demand,
     // not by event-uplift attribution.
-    const shiftIdxs = SHIFT_HOURS.map(h => HOURS.indexOf(h));
+    const shiftIdxs = SHIFT_HOURS.map((h) => HOURS.indexOf(h));
     const prepItems = (menu ?? []).map((m: any) => {
       const cells = grid[m.id];
       const pred = shiftIdxs.reduce((s, i) => s + cells[i].predicted, 0);
@@ -192,9 +206,7 @@ Deno.serve(async (req) => {
       if (ratio >= 1.6) status = "critical";
       else if (ratio < 0.7) status = "low";
       const note =
-        ratio >= 1.6 ? "Heavy volume — prep extra"
-        : ratio < 0.7 ? "Slow shift — trim prep"
-        : "Healthy steady demand";
+        ratio >= 1.6 ? "Heavy volume — prep extra" : ratio < 0.7 ? "Slow shift — trim prep" : "Healthy steady demand";
       return { id: m.id, name: m.name, units, ratio: Number(ratio.toFixed(2)), status, note };
     });
 
@@ -205,8 +217,8 @@ Deno.serve(async (req) => {
       const inv = stockByItem[m.id];
       // Fallback if no inventory row exists yet for this item
       const stock = inv ? Math.round(inv.stock) : Math.round(Number(m.baseline_hourly_demand) * 2);
-      const par   = inv ? Math.round(inv.par)   : Math.round(Number(m.baseline_hourly_demand) * 6);
-      const unit  = inv?.unit ?? "units";
+      const par = inv ? Math.round(inv.par) : Math.round(Number(m.baseline_hourly_demand) * 6);
+      const unit = inv?.unit ?? "units";
       // Order to bring stock back to par AFTER covering predicted demand
       const projected = stock - demand;
       const order = projected < par ? Math.ceil((par - projected) / 10) * 10 : 0;
@@ -238,7 +250,7 @@ Deno.serve(async (req) => {
     }
     const labelMap: Record<string, string> = {
       event_dist_km: activeEvent ? activeEvent.name : "Event Proximity",
-      event_attend:  activeEvent ? `${activeEvent.name} Crowd` : "Crowd Size",
+      event_attend: activeEvent ? `${activeEvent.name} Crowd` : "Crowd Size",
       hour: "Time of Day",
       dow: "Day of Week",
       temp_f: "Temperature",
@@ -257,7 +269,7 @@ Deno.serve(async (req) => {
         // Signed pct of total absolute impact — preserves direction.
         contribution: Math.round((v / Math.max(1, totalShapAbs)) * 100),
       }))
-      .filter(f => f.contribution !== 0)
+      .filter((f) => f.contribution !== 0)
       .sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution))
       .slice(0, 6);
 
@@ -269,7 +281,9 @@ Deno.serve(async (req) => {
         weather: {
           tempF: weatherDay.summary.tempF,
           condition: weatherDay.summary.condition,
-          precip: Object.values(weatherDay.byHour).reduce((s, w) => s + w.precip, 0) / Math.max(1, Object.keys(weatherDay.byHour).length),
+          precip:
+            Object.values(weatherDay.byHour).reduce((s, w) => s + w.precip, 0) /
+            Math.max(1, Object.keys(weatherDay.byHour).length),
         },
         event: {
           name: activeEvent?.name ?? "",
@@ -284,12 +298,16 @@ Deno.serve(async (req) => {
     );
 
     // Net impact: sum of all signed contributions (capped to plausible range)
-    const netImpact = Math.max(-100, Math.min(100,
-      activeSignals.reduce((s, sig) => s + sig.contribution, 0)
-    ));
+    const netImpact = Math.max(
+      -100,
+      Math.min(
+        100,
+        activeSignals.reduce((s, sig) => s + sig.contribution, 0),
+      ),
+    );
 
     const predictedTotal = demandSeries.reduce((s, d) => s + d.predicted, 0);
-    const peakHour = demandSeries.reduce((p, d) => d.predicted > p.predicted ? d : p, demandSeries[0]);
+    const peakHour = demandSeries.reduce((p, d) => (d.predicted > p.predicted ? d : p), demandSeries[0]);
     const sortedByVolume = [...prepItems].sort((a, b) => b.units - a.units);
 
     const aiBriefing = await generateBriefing({
@@ -319,10 +337,10 @@ Deno.serve(async (req) => {
       featureContribution,
       activeSignals,
       savings: {
-        // Demo numbers — tuned to a mid-size Boston restaurant (~250 covers/day)
-        wastePreventedWeek: 1150,
-        projectedMonthly:   4800,
-        co2OffsetKg:        310,
+        // Hardcoded demo numbers
+        wastePreventedWeek: 420,
+        projectedMonthly: 1820,
+        co2OffsetKg: 95,
       },
       aiBriefing,
       meta: {
@@ -331,8 +349,8 @@ Deno.serve(async (req) => {
         peakOrders: peakHour?.predicted ?? 0,
         eventActive: !!activeEvent,
         netImpactPct: netImpact,
-        liftCount: activeSignals.filter(s => s.direction === "up").length,
-        dragCount: activeSignals.filter(s => s.direction === "down").length,
+        liftCount: activeSignals.filter((s) => s.direction === "up").length,
+        dragCount: activeSignals.filter((s) => s.direction === "down").length,
         model: {
           version: model.version,
           trees: model.n_trees,
@@ -343,18 +361,26 @@ Deno.serve(async (req) => {
     };
 
     // Best-effort cache
-    supabase.from("predictions").insert({
-      location_id: locationId, shift_date: shiftDate, shift_label: shiftDef.short, payload,
-    }).then(({ error }) => { if (error) console.error("cache insert failed", error); });
+    supabase
+      .from("predictions")
+      .insert({
+        location_id: locationId,
+        shift_date: shiftDate,
+        shift_label: shiftDef.short,
+        payload,
+      })
+      .then(({ error }) => {
+        if (error) console.error("cache insert failed", error);
+      });
 
     return new Response(JSON.stringify(payload), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
     console.error("predict error", e);
-    return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "unknown" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "unknown" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });

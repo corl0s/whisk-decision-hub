@@ -4,6 +4,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { runInference, type ModelArtifact } from "./inference.ts";
 import { generateBriefing } from "./briefing.ts";
+import { fetchWeather, isHoliday } from "./weather.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -91,8 +92,13 @@ Deno.serve(async (req) => {
         }
       : { dist_km: 9.99, attend: 0 };
 
-    // Synthetic weather (clear, 58F) — would come from API in prod
-    const weather = { temp_f: 58, precip: 0, clear: 1 };
+    // Real weather from Open-Meteo (free, no API key) — varies per date & hour
+    const weatherDay = await fetchWeather(location.lat, location.lng, shiftDate, HOURS);
+    const holiday = isHoliday(shiftDate);
+    // Day-of-week multiplier on lag features: weekends + holidays run hotter,
+    // Mondays run cooler. Gives the model date-varying lag inputs even without
+    // a sales history table.
+    const dowMult = holiday ? 1.25 : ([0.85, 1.0, 1.05, 1.05, 1.1, 1.2, 1.15][dow] ?? 1.0);
 
     for (const m of menu ?? []) {
       const cat = m.category as string;
@@ -101,18 +107,22 @@ Deno.serve(async (req) => {
       const cells: Cell[] = [];
       for (let i = 0; i < HOURS.length; i++) {
         const hour = HOURS[i];
+        const w = weatherDay.byHour[hour] ?? { temp_f: 58, precip: 0, clear: 1, cloud_pct: 10 };
         // Hour-shape: bell curve peaking at lunchtime (matches training synth).
-        // Used as a lag-feature proxy so the model gets hour-varying input.
         const hourShape = Math.exp(-Math.pow(hour - 12.5, 2) / 8) + 0.25;
-        const lag = base * hourShape;
+        // Lag features: scaled by dow + slight jitter from precip (rainy day → lower lag)
+        const precipDamp = Math.max(0.7, 1 - w.precip * 0.15);
+        const lag1d = base * hourShape * dowMult * precipDamp;
+        const lag7d = base * hourShape * dowMult;            // last week, no weather
+        const lag28d = base * hourShape;                     // 4-wk avg, neutral
         let predSum = 0, baseSum = 0;
         const shapAgg: Record<string, number> = {};
         for (const idx of modelIdxs) {
           const featReal = [
             hour, dow, idx, catIndex[cat] ?? 0,
-            weather.temp_f, weather.precip, weather.clear,
+            w.temp_f, w.precip, w.clear,
             eventCtx.dist_km, eventCtx.attend,
-            lag, lag, lag, // lag_7d, lag_28d, lag_1d
+            lag7d, lag28d, lag1d,
           ];
           const featBase = [...featReal];
           featBase[7] = 9.99; // event_dist_km
@@ -233,8 +243,8 @@ Deno.serve(async (req) => {
           event: activeEvent
             ? { name: activeEvent.name, status: "Active", distanceKm: Number(activeDistance.toFixed(2)) }
             : { name: "None", status: "Inactive", distanceKm: 0 },
-          weather: { condition: "Clear", tempF: 58 },
-          academic: { status: "Semester Active" },
+          weather: weatherDay.summary,
+          academic: { status: holiday ? "Holiday" : "Semester Active" },
         },
       },
       demandSeries,

@@ -5,6 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { runInference, type ModelArtifact } from "./inference.ts";
 import { generateBriefing } from "./briefing.ts";
 import { fetchWeather, isHoliday } from "./weather.ts";
+import { buildActiveSignals } from "./signals.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

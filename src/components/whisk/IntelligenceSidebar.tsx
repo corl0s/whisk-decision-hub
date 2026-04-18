@@ -1,61 +1,18 @@
-import { Bar, BarChart, Cell, ResponsiveContainer, XAxis, YAxis } from "recharts";
-import { Brain, Calculator, MapPin } from "lucide-react";
+import { Calculator, MapPin } from "lucide-react";
 import { useState } from "react";
 import { usePrediction } from "@/hooks/usePrediction";
-
-const palette = [
-  "hsl(var(--accent))",
-  "hsl(var(--primary-glow))",
-  "hsl(var(--success))",
-  "hsl(var(--warning))",
-  "hsl(var(--muted-foreground))",
-];
+import { DriverCards } from "./DriverCards";
 
 export const IntelligenceSidebar = () => {
   const [locations, setLocations] = useState(20);
   const { data } = usePrediction();
-  const featureContribution = data?.featureContribution ?? [];
   const monthlySavings = data?.savings.projectedMonthly ?? 2800;
   const annualPerLocation = monthlySavings * 12;
   const total = locations * annualPerLocation;
 
   return (
     <aside className="space-y-5">
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-elev-sm">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/10">
-            <Brain className="h-3.5 w-3.5 text-accent" />
-          </div>
-          <h3 className="text-sm font-bold text-foreground">What's driving the prediction</h3>
-        </div>
-        <p className="mt-1 text-xs text-muted-foreground">Top model feature contributions.</p>
-
-        <div className="mt-4 h-[200px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={featureContribution} layout="vertical" margin={{ top: 0, right: 28, left: 0, bottom: 0 }}>
-              <XAxis type="number" hide domain={[0, 40]} />
-              <YAxis type="category" dataKey="feature" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 11, fill: "hsl(var(--foreground))" }} axisLine={false} tickLine={false} width={110} />
-              <Bar dataKey="contribution" radius={[0, 6, 6, 0]} barSize={14}>
-                {featureContribution.map((_, i) => (
-                  <Cell key={i} fill={palette[i % palette.length]} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        <ul className="mt-1 space-y-1 text-[11px] font-medium text-muted-foreground">
-          {featureContribution.map((f, i) => (
-            <li key={f.feature} className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-sm" style={{ background: palette[i % palette.length] }} />
-                {f.feature}
-              </span>
-              <span className="font-bold text-foreground">+{f.contribution}%</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <DriverCards />
 
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-elev-sm">
         <div className="relative h-32 bg-gradient-to-br from-primary-glow/20 via-accent/10 to-success/10">

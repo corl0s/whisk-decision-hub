@@ -31,6 +31,15 @@ export interface PredictResponse {
     risk: "low" | "high";
   }>;
   featureContribution: Array<{ feature: string; contribution: number }>;
+  activeSignals: Array<{
+    key: string;
+    feature: string;
+    contribution: number;
+    direction: "up" | "down" | "neutral";
+    rawValue: string;
+    context: string;
+    explanation: string;
+  }>;
   savings: { wastePreventedWeek: number; projectedMonthly: number; co2OffsetKg: number };
   aiBriefing: string;
   meta: {
@@ -38,6 +47,9 @@ export interface PredictResponse {
     peakHour: string | null;
     peakOrders: number;
     eventActive: boolean;
+    netImpactPct: number;
+    liftCount: number;
+    dragCount: number;
     model?: {
       version: string;
       trees: number;

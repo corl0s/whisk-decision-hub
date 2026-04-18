@@ -5,6 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { runInference, type ModelArtifact } from "./inference.ts";
 import { generateBriefing } from "./briefing.ts";
 import { fetchWeather, isHoliday } from "./weather.ts";
+import { buildActiveSignals } from "./signals.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -203,24 +204,53 @@ Deno.serve(async (req) => {
       event_dist_km: activeEvent ? activeEvent.name : "Event Proximity",
       event_attend:  activeEvent ? `${activeEvent.name} Crowd` : "Crowd Size",
       hour: "Time of Day",
-      dow: "Day-of-Week",
+      dow: "Day of Week",
       temp_f: "Temperature",
       precip: "Precipitation",
-      clear: "Clear Weather",
+      clear: "Sky Conditions",
       lag_7d: "Last Week (Same Hour)",
       lag_28d: "4-Week Average",
       lag_1d: "Yesterday Same Hour",
       item_idx: "Item Mix",
       cat_idx: "Category Mix",
     };
-    const featureContribution = Object.entries(shapTotals)
-      .map(([k, v]) => ({
-        feature: labelMap[k] ?? k,
+    const ranked = Object.entries(shapTotals)
+      .map(([key, v]) => ({
+        key,
+        feature: labelMap[key] ?? key,
+        // Signed pct of total absolute impact — preserves direction.
         contribution: Math.round((v / Math.max(1, totalShapAbs)) * 100),
       }))
       .filter(f => f.contribution !== 0)
       .sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution))
-      .slice(0, 5);
+      .slice(0, 6);
+
+    const featureContribution = ranked.map(({ feature, contribution }) => ({ feature, contribution }));
+
+    const activeSignals = buildActiveSignals(
+      ranked.map(({ key, contribution }) => ({ key, contribution })),
+      {
+        weather: {
+          tempF: weatherDay.summary.tempF,
+          condition: weatherDay.summary.condition,
+          precip: Object.values(weatherDay.byHour).reduce((s, w) => s + w.precip, 0) / Math.max(1, Object.keys(weatherDay.byHour).length),
+        },
+        event: {
+          name: activeEvent?.name ?? "",
+          distanceKm: activeEvent ? Number(activeDistance.toFixed(2)) : 0,
+          attendance: activeEvent ? Number(activeEvent.expected_attendance ?? 0) : 0,
+          active: !!activeEvent,
+        },
+        dow,
+        holiday,
+        isoDate: shiftDate,
+      },
+    );
+
+    // Net impact: sum of all signed contributions (capped to plausible range)
+    const netImpact = Math.max(-100, Math.min(100,
+      activeSignals.reduce((s, sig) => s + sig.contribution, 0)
+    ));
 
     const predictedTotal = demandSeries.reduce((s, d) => s + d.predicted, 0);
     const peakHour = demandSeries.reduce((p, d) => d.predicted > p.predicted ? d : p, demandSeries[0]);
@@ -252,6 +282,7 @@ Deno.serve(async (req) => {
       prepItems,
       inventory,
       featureContribution,
+      activeSignals,
       savings: { wastePreventedWeek: 340, projectedMonthly: 2800, co2OffsetKg: 420 },
       aiBriefing,
       meta: {
@@ -259,6 +290,9 @@ Deno.serve(async (req) => {
         peakHour: peakHour?.hour ?? null,
         peakOrders: peakHour?.predicted ?? 0,
         eventActive: !!activeEvent,
+        netImpactPct: netImpact,
+        liftCount: activeSignals.filter(s => s.direction === "up").length,
+        dragCount: activeSignals.filter(s => s.direction === "down").length,
         model: {
           version: model.version,
           trees: model.n_trees,

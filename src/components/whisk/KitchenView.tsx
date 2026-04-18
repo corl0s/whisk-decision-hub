@@ -35,9 +35,15 @@ export const KitchenView = () => {
               </div>
             </div>
 
-            <div className="mt-6 flex items-baseline gap-2 rounded-xl border border-success/20 bg-success-soft px-4 py-3">
-              <span className="text-3xl font-bold text-success">{uplift >= 0 ? "+" : ""}{uplift}</span>
-              <span className="text-xs font-semibold text-success">predicted orders vs. baseline</span>
+            <div className="mt-6 grid grid-cols-2 gap-2">
+              <div className="rounded-xl border border-success/20 bg-success-soft px-4 py-3">
+                <div className="text-2xl font-bold text-success">{predictedTotal}</div>
+                <div className="text-[11px] font-semibold text-success">total predicted orders</div>
+              </div>
+              <div className="rounded-xl border border-accent/20 bg-accent/10 px-4 py-3">
+                <div className="text-2xl font-bold text-accent">{peakOrders}<span className="ml-1 text-sm">@{peakHour ?? "—"}</span></div>
+                <div className="text-[11px] font-semibold text-accent">peak hour volume</div>
+              </div>
             </div>
 
             {model && (

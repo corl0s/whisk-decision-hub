@@ -3,6 +3,8 @@ import { ShiftDatePicker } from "./ShiftDatePicker";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useTopEvent } from "@/hooks/useTopEvent";
+import { usePrediction } from "@/hooks/usePrediction";
 
 type View = "kitchen" | "manager";
 
@@ -40,10 +42,19 @@ const SignalBadge = ({
 export const Header = ({ view, onViewChange }: HeaderProps) => {
   const { signOut } = useAuth();
   const nav = useNavigate();
+  const { date } = usePrediction();
+  const { event: topEvent, loading: eventLoading } = useTopEvent(date);
   const handleSignOut = async () => {
     await signOut();
     nav("/auth", { replace: true });
   };
+  const eventLabel = eventLoading
+    ? "Loading…"
+    : topEvent
+    ? topEvent.attendance
+      ? `${topEvent.title} (${topEvent.attendance.toLocaleString()})`
+      : topEvent.title
+    : "No major event";
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-xl">
       <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-3 md:px-6">
@@ -67,7 +78,7 @@ export const Header = ({ view, onViewChange }: HeaderProps) => {
 
         {/* Active signals + date picker */}
         <div className="flex items-center gap-2">
-          <SignalBadge icon={Trophy} label="Event" value="Boston Marathon" tone="accent" />
+          <SignalBadge icon={Trophy} label="Event" value={eventLabel} tone="accent" />
           <SignalBadge icon={CloudSun} label="Weather" value="Clear 58°F" />
           <SignalBadge icon={GraduationCap} label="Academic" value="Semester Active" />
           <ShiftDatePicker />

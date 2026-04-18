@@ -97,6 +97,16 @@ export const Header = ({ view, onViewChange }: HeaderProps) => {
             <LineChart className="h-3.5 w-3.5" />
             Manager View
           </button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSignOut}
+            className="ml-1 h-8 gap-1.5 rounded-full px-3 text-xs font-semibold text-muted-foreground hover:text-foreground"
+            title="Sign out"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            <span className="hidden md:inline">Sign out</span>
+          </Button>
         </div>
       </div>
     </header>

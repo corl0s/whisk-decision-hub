@@ -119,8 +119,8 @@ export function buildActiveSignals(
           rawValue: ctx.weather.condition,
           context: ctx.weather.condition === "Clear" ? "Clear skies" : "Cloud cover present",
           explanation: contribution >= 0
-            ? "Clear weather draws walk-in foot traffic"
-            : "Overcast skies trim incidental walk-ins",
+            ? `Clear weather draws walk-in foot traffic — ${impactPhrase(contribution)}`
+            : `Overcast skies trim incidental walk-ins — ${impactPhrase(contribution)}`,
         };
       case "event_dist_km":
         return {
@@ -159,8 +159,8 @@ export function buildActiveSignals(
           rawValue: "Lunch shift (11a–2p)",
           context: "Peak hours window",
           explanation: contribution >= 0
-            ? "Hour-of-day pattern lifts demand at lunch peak"
-            : "Edge of peak window — softer than midday max",
+            ? `Hour-of-day pattern lifts demand at lunch peak — ${impactPhrase(contribution)}`
+            : `Edge of peak window — ${impactPhrase(contribution)}`,
         };
       case "lag_7d":
         return {
@@ -193,8 +193,8 @@ export function buildActiveSignals(
           rawValue: "Per-item learned bias",
           context: "Item-level effect",
           explanation: contribution >= 0
-            ? "Top-selling items skew demand higher today"
-            : "Item mix runs cooler today",
+            ? `Top-selling items skew demand higher today — ${impactPhrase(contribution)}`
+            : `Item mix runs cooler today — ${impactPhrase(contribution)}`,
         };
       case "cat_idx":
         return {
@@ -203,8 +203,8 @@ export function buildActiveSignals(
           rawValue: "Per-category learned bias",
           context: "Category-level effect",
           explanation: contribution >= 0
-            ? "Strong categories carry the day's demand"
-            : "Category mix is a slight drag today",
+            ? `Strong categories carry the day's demand — ${impactPhrase(contribution)}`
+            : `Category mix is a slight drag today — ${impactPhrase(contribution)}`,
         };
       default:
         return {
@@ -212,7 +212,7 @@ export function buildActiveSignals(
           feature: key,
           rawValue: "—",
           context: "Model feature",
-          explanation: contribution >= 0 ? "Lifts forecast" : "Suppresses forecast",
+          explanation: contribution >= 0 ? `Lifts forecast — ${impactPhrase(contribution)}` : `Suppresses forecast — ${impactPhrase(contribution)}`,
         };
     }
   });

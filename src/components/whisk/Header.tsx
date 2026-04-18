@@ -1,4 +1,4 @@
-import { ChefHat, LineChart, Activity, CloudSun, GraduationCap, Trophy, LogOut } from "lucide-react";
+import { ChefHat, LineChart, Activity, CloudSun, GraduationCap, LogOut } from "lucide-react";
 import { ShiftDatePicker } from "./ShiftDatePicker";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";

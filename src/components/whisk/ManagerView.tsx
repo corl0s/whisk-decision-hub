@@ -1,6 +1,16 @@
-import { CheckCircle2, AlertTriangle, Send, TrendingDown, DollarSign, Leaf } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Send, TrendingDown, DollarSign, Leaf, Package, Clock } from "lucide-react";
 import { forwardRef, useState } from "react";
 import { usePrediction } from "@/hooks/usePrediction";
+
+function timeAgo(iso: string | null): string {
+  if (!iso) return "—";
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.round(diffMs / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.round(hrs / 24)}d ago`;
+}
 
 interface SavingsCardProps {
   icon: React.ComponentType<{ className?: string }>;
@@ -37,6 +47,11 @@ export const ManagerView = () => {
   const inventory = data?.inventory ?? [];
   const savings = data?.savings ?? { wastePreventedWeek: 0, projectedMonthly: 0, co2OffsetKg: 0 };
 
+  const totalLines = inventory.length;
+  const lowStockCount = inventory.filter((r) => r.risk === "high").length;
+  const itemsToOrder = inventory.filter((r) => r.order > 0).length;
+  const totalUnitsToOrder = inventory.reduce((s, r) => s + r.order, 0);
+
   return (
     <div className="fade-swap space-y-6">
       <section>
@@ -54,18 +69,20 @@ export const ManagerView = () => {
       </section>
 
       <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-elev-sm">
-        <div className="flex items-center justify-between border-b border-border p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-5">
           <div>
-            <h2 className="text-base font-bold text-foreground">Inventory Optimization</h2>
-            <p className="text-xs text-muted-foreground">Recommendations from live /predict forecast.</p>
+            <h2 className="text-base font-bold text-foreground">Inventory & Reorder</h2>
+            <p className="text-xs text-muted-foreground">
+              {totalLines} SKUs tracked · <span className="font-semibold text-danger">{lowStockCount}</span> at risk · <span className="font-semibold text-accent">{itemsToOrder}</span> need reorder
+            </p>
           </div>
           <button
             onClick={() => setSent(true)}
-            disabled={sent}
+            disabled={sent || itemsToOrder === 0}
             className="inline-flex items-center gap-2 rounded-full bg-gradient-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-elev-md transition-all hover:shadow-elev-lg disabled:opacity-70"
           >
             <Send className="h-3.5 w-3.5" />
-            {sent ? "Purchase Order Sent" : "Generate & Send Purchase Order"}
+            {sent ? "Purchase Order Sent ✓" : `Send Purchase Order (${totalUnitsToOrder} units)`}
           </button>
         </div>
 
@@ -74,38 +91,61 @@ export const ManagerView = () => {
             <thead className="bg-muted/40">
               <tr className="text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                 <th className="px-5 py-3">Item</th>
-                <th className="px-3 py-3 text-right">Current Stock</th>
+                <th className="px-3 py-3 text-right">On Hand</th>
+                <th className="px-3 py-3 text-right">Par</th>
                 <th className="px-3 py-3 text-right">Predicted Demand</th>
                 <th className="px-3 py-3 text-right">Recommended Order</th>
-                <th className="px-5 py-3 text-right">Waste Risk</th>
+                <th className="px-3 py-3 text-right">Last Counted</th>
+                <th className="px-5 py-3 text-right">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {inventory.map((row) => (
-                <tr key={row.item} className="transition-colors hover:bg-muted/30">
-                  <td className="px-5 py-4 font-medium text-foreground">{row.item}</td>
-                  <td className="px-3 py-4 text-right tabular-nums text-foreground">{row.stock}</td>
-                  <td className="px-3 py-4 text-right tabular-nums font-semibold text-foreground">{row.demand}</td>
-                  <td className="px-3 py-4 text-right">
-                    <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-bold tabular-nums ${row.order > 0 ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground"}`}>
-                      {row.order > 0 ? `+${row.order}` : "0"}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4 text-right">
-                    {row.risk === "high" ? (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-danger/20 bg-danger-soft px-2.5 py-1 text-[11px] font-bold text-danger">
-                        <AlertTriangle className="h-3 w-3" />
-                        High Surplus
+              {inventory.map((row) => {
+                const stockPct = Math.min(100, Math.round((row.stock / Math.max(1, row.par)) * 100));
+                const barColor = row.risk === "high" ? "bg-danger" : stockPct < 50 ? "bg-warning" : "bg-success";
+                return (
+                  <tr key={row.item} className="transition-colors hover:bg-muted/30">
+                    <td className="px-5 py-4 font-medium text-foreground">
+                      <div className="flex items-center gap-2">
+                        <Package className="h-3.5 w-3.5 text-muted-foreground" />
+                        {row.item}
+                      </div>
+                    </td>
+                    <td className="px-3 py-4 text-right">
+                      <div className="tabular-nums font-semibold text-foreground">{row.stock} <span className="text-[10px] font-normal text-muted-foreground">{row.unit}</span></div>
+                      <div className="mt-1 h-1 w-16 ml-auto rounded-full bg-muted overflow-hidden">
+                        <div className={`h-full ${barColor} transition-all`} style={{ width: `${stockPct}%` }} />
+                      </div>
+                    </td>
+                    <td className="px-3 py-4 text-right tabular-nums text-muted-foreground">{row.par}</td>
+                    <td className="px-3 py-4 text-right tabular-nums font-semibold text-foreground">{row.demand}</td>
+                    <td className="px-3 py-4 text-right">
+                      <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-bold tabular-nums ${row.order > 0 ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground"}`}>
+                        {row.order > 0 ? `+${row.order}` : "—"}
                       </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-success/20 bg-success-soft px-2.5 py-1 text-[11px] font-bold text-success">
-                        <CheckCircle2 className="h-3 w-3" />
-                        Low
+                    </td>
+                    <td className="px-3 py-4 text-right">
+                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground tabular-nums">
+                        <Clock className="h-3 w-3" />
+                        {timeAgo(row.lastCounted)}
                       </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-5 py-4 text-right">
+                      {row.risk === "high" ? (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-danger/20 bg-danger-soft px-2.5 py-1 text-[11px] font-bold text-danger">
+                          <AlertTriangle className="h-3 w-3" />
+                          Will Stockout
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-success/20 bg-success-soft px-2.5 py-1 text-[11px] font-bold text-success">
+                          <CheckCircle2 className="h-3 w-3" />
+                          Healthy
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

@@ -1,33 +1,35 @@
 import { CheckCircle2, AlertTriangle, Send, TrendingDown, DollarSign, Leaf } from "lucide-react";
-import { useState } from "react";
+import { forwardRef, useState } from "react";
 import { usePrediction } from "@/hooks/usePrediction";
 
-const SavingsCard = ({
-  icon: Icon,
-  label,
-  value,
-  sublabel,
-  highlight = false,
-}: {
+interface SavingsCardProps {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string;
   sublabel: string;
   highlight?: boolean;
-}) => (
-  <div className={`rounded-2xl border p-5 shadow-elev-sm transition-all ${highlight ? "border-success/30 bg-gradient-success text-success-foreground shadow-elev-md" : "border-border bg-card"}`}>
-    <div className="flex items-center gap-2">
-      <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${highlight ? "bg-success-foreground/20" : "bg-success-soft"}`}>
-        <Icon className={`h-4 w-4 ${highlight ? "text-success-foreground" : "text-success"}`} />
+}
+
+const SavingsCard = forwardRef<HTMLDivElement, SavingsCardProps>(
+  ({ icon: Icon, label, value, sublabel, highlight = false }, ref) => (
+    <div
+      ref={ref}
+      className={`rounded-2xl border p-5 shadow-elev-sm transition-all ${highlight ? "border-success/30 bg-gradient-success text-success-foreground shadow-elev-md" : "border-border bg-card"}`}
+    >
+      <div className="flex items-center gap-2">
+        <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${highlight ? "bg-success-foreground/20" : "bg-success-soft"}`}>
+          <Icon className={`h-4 w-4 ${highlight ? "text-success-foreground" : "text-success"}`} />
+        </div>
+        <span className={`text-[11px] font-bold uppercase tracking-wider ${highlight ? "text-success-foreground/90" : "text-muted-foreground"}`}>
+          {label}
+        </span>
       </div>
-      <span className={`text-[11px] font-bold uppercase tracking-wider ${highlight ? "text-success-foreground/90" : "text-muted-foreground"}`}>
-        {label}
-      </span>
+      <div className={`mt-3 text-4xl font-bold tracking-tight ${highlight ? "text-success-foreground" : "text-foreground"}`}>{value}</div>
+      <div className={`mt-1 text-xs font-medium ${highlight ? "text-success-foreground/80" : "text-muted-foreground"}`}>{sublabel}</div>
     </div>
-    <div className={`mt-3 text-4xl font-bold tracking-tight ${highlight ? "text-success-foreground" : "text-foreground"}`}>{value}</div>
-    <div className={`mt-1 text-xs font-medium ${highlight ? "text-success-foreground/80" : "text-muted-foreground"}`}>{sublabel}</div>
-  </div>
+  )
 );
+SavingsCard.displayName = "SavingsCard";
 
 export const ManagerView = () => {
   const [sent, setSent] = useState(false);

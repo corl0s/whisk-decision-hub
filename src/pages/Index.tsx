@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 import { Header } from "@/components/whisk/Header";
 import { KitchenView } from "@/components/whisk/KitchenView";
 import { ManagerView } from "@/components/whisk/ManagerView";
 import { IntelligenceSidebar } from "@/components/whisk/IntelligenceSidebar";
 import { PredictionProvider, usePrediction } from "@/hooks/usePrediction";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Loader2, AlertCircle } from "lucide-react";
 
 type View = "kitchen" | "manager";
@@ -43,6 +46,33 @@ const Body = ({ view }: { view: View }) => {
 
 const Index = () => {
   const [view, setView] = useState<View>("kitchen");
+  const { user, loading: authLoading } = useAuth();
+  const [checking, setChecking] = useState(true);
+  const [needsSetup, setNeedsSetup] = useState(false);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) { setChecking(false); return; }
+    supabase
+      .from("restaurants")
+      .select("setup_complete")
+      .eq("owner_user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        setNeedsSetup(!data?.setup_complete);
+        setChecking(false);
+      });
+  }, [user, authLoading]);
+
+  if (authLoading || checking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-6 w-6 animate-spin text-accent" />
+      </div>
+    );
+  }
+  if (!user) return <Navigate to="/auth" replace />;
+  if (needsSetup) return <Navigate to="/setup" replace />;
 
   return (
     <PredictionProvider>

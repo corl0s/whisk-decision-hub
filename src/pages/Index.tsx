@@ -57,7 +57,7 @@ const Index = () => {
 
           <footer className="mt-10 flex flex-col items-center gap-1 border-t border-border pt-6 text-center text-xs text-muted-foreground">
             <p className="font-semibold text-foreground">Whisk Labs · Decision Intelligence for Food Operations</p>
-            <p>Live /predict API · Heuristic forecast + AI briefing · Boston Marathon Monday, Apr 21 2026</p>
+            <p>Live /predict API · Heuristic forecast + AI briefing · Boston Marathon Monday, Apr 20 2026</p>
           </footer>
         </main>
       </div>

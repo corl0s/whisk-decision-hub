@@ -269,7 +269,7 @@ Deno.serve(async (req) => {
     const aiBriefing = await generateBriefing({
       event: activeEvent ? { name: activeEvent.name, distance_km: Number(activeDistance.toFixed(2)) } : null,
       location: location.name,
-      shift: "11:00 AM – 2:00 PM",
+      shift: shiftDef.display,
       surge_pct: 0, // no longer surfaced
       top_prep: sortedByVolume[0],
       cut_prep: sortedByVolume[sortedByVolume.length - 1],
@@ -279,7 +279,7 @@ Deno.serve(async (req) => {
       scenario: {
         date: shiftDate,
         location: location.address,
-        shift: "11:00 AM – 2:00 PM",
+        shift: shiftDef.display,
         signals: {
           event: activeEvent
             ? { name: activeEvent.name, status: "Active", distanceKm: Number(activeDistance.toFixed(2)) }
@@ -314,7 +314,7 @@ Deno.serve(async (req) => {
 
     // Best-effort cache
     supabase.from("predictions").insert({
-      location_id: locationId, shift_date: shiftDate, shift_label: "11a-2p", payload,
+      location_id: locationId, shift_date: shiftDate, shift_label: shiftDef.short, payload,
     }).then(({ error }) => { if (error) console.error("cache insert failed", error); });
 
     return new Response(JSON.stringify(payload), {

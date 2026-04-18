@@ -60,16 +60,10 @@ export const KitchenView = () => {
           <div className="p-5">
             <div className="mb-2 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-foreground">Hourly Demand Forecast</h2>
-              <div className="flex items-center gap-3 text-[11px] font-medium">
-                <span className="flex items-center gap-1.5 text-muted-foreground">
-                  <span className="h-0.5 w-3 border-t-2 border-dashed border-muted-foreground" />
-                  Baseline
-                </span>
-                <span className="flex items-center gap-1.5 text-accent">
-                  <span className="h-0.5 w-3 bg-accent" />
-                  Predicted
-                </span>
-              </div>
+              <span className="flex items-center gap-1.5 text-[11px] font-medium text-accent">
+                <span className="h-0.5 w-3 bg-accent" />
+                Predicted Orders
+              </span>
             </div>
             <DemandChart />
           </div>

@@ -62,6 +62,7 @@ export interface PredictResponse {
 export async function fetchPrediction(params?: {
   location_id?: string;
   date?: string;
+  shift?: string;
 }): Promise<PredictResponse> {
   const { data, error } = await supabase.functions.invoke("predict", {
     body: params ?? {},

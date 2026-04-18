@@ -42,10 +42,19 @@ const SignalBadge = ({
 export const Header = ({ view, onViewChange }: HeaderProps) => {
   const { signOut } = useAuth();
   const nav = useNavigate();
+  const { date } = usePrediction();
+  const { event: topEvent, loading: eventLoading } = useTopEvent(date);
   const handleSignOut = async () => {
     await signOut();
     nav("/auth", { replace: true });
   };
+  const eventLabel = eventLoading
+    ? "Loading…"
+    : topEvent
+    ? topEvent.attendance
+      ? `${topEvent.title} (${topEvent.attendance.toLocaleString()})`
+      : topEvent.title
+    : "No major event";
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-xl">
       <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-3 md:px-6">

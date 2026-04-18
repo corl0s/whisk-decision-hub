@@ -26,9 +26,12 @@ export interface PredictResponse {
   inventory: Array<{
     item: string;
     stock: number;
+    par: number;
+    unit: string;
     demand: number;
     order: number;
     risk: "low" | "high";
+    lastCounted: string | null;
   }>;
   featureContribution: Array<{ feature: string; contribution: number }>;
   activeSignals: Array<{

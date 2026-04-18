@@ -49,8 +49,9 @@ function precipExplain(precip: number, contribution: number) {
 }
 
 function eventExplain(distanceKm: number, attendance: number, contribution: number, eventName: string) {
+  const distLabel = distanceKm < 0.1 ? "right at the location" : `within ${distanceKm.toFixed(1)} km`;
   if (contribution >= 0) {
-    return `${eventName} draws ~${attendance.toLocaleString()} people within ${distanceKm.toFixed(1)} km — major spectator surge`;
+    return `${eventName} draws ~${attendance.toLocaleString()} people ${distLabel} — major spectator surge`;
   }
   return `${eventName} street closures cut delivery access despite nearby crowds`;
 }

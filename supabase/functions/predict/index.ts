@@ -282,6 +282,7 @@ Deno.serve(async (req) => {
       prepItems,
       inventory,
       featureContribution,
+      activeSignals,
       savings: { wastePreventedWeek: 340, projectedMonthly: 2800, co2OffsetKg: 420 },
       aiBriefing,
       meta: {
@@ -289,6 +290,9 @@ Deno.serve(async (req) => {
         peakHour: peakHour?.hour ?? null,
         peakOrders: peakHour?.predicted ?? 0,
         eventActive: !!activeEvent,
+        netImpactPct: netImpact,
+        liftCount: activeSignals.filter(s => s.direction === "up").length,
+        dragCount: activeSignals.filter(s => s.direction === "down").length,
         model: {
           version: model.version,
           trees: model.n_trees,

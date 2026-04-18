@@ -14,7 +14,145 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      events: {
+        Row: {
+          created_at: string
+          event_date: string
+          event_type: string
+          expected_attendance: number | null
+          id: string
+          lat: number | null
+          lng: number | null
+          metadata: Json
+          name: string
+          radius_km: number
+        }
+        Insert: {
+          created_at?: string
+          event_date: string
+          event_type: string
+          expected_attendance?: number | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          metadata?: Json
+          name: string
+          radius_km?: number
+        }
+        Update: {
+          created_at?: string
+          event_date?: string
+          event_type?: string
+          expected_attendance?: number | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          metadata?: Json
+          name?: string
+          radius_km?: number
+        }
+        Relationships: []
+      }
+      locations: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          lat: number
+          lng: number
+          name: string
+          timezone: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          lat: number
+          lng: number
+          name: string
+          timezone?: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          lat?: number
+          lng?: number
+          name?: string
+          timezone?: string
+        }
+        Relationships: []
+      }
+      menu_items: {
+        Row: {
+          baseline_hourly_demand: number
+          category: string
+          created_at: string
+          id: string
+          location_id: string
+          name: string
+        }
+        Insert: {
+          baseline_hourly_demand?: number
+          category: string
+          created_at?: string
+          id?: string
+          location_id: string
+          name: string
+        }
+        Update: {
+          baseline_hourly_demand?: number
+          category?: string
+          created_at?: string
+          id?: string
+          location_id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_items_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      predictions: {
+        Row: {
+          created_at: string
+          id: string
+          location_id: string
+          payload: Json
+          shift_date: string
+          shift_label: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          location_id: string
+          payload: Json
+          shift_date: string
+          shift_label: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          location_id?: string
+          payload?: Json
+          shift_date?: string
+          shift_label?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "predictions_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -1,7 +1,7 @@
 // Builds the 60-feature vector for the quantity model.
 // Real signals where possible, deterministic seeded random for unknown lags.
 
-import { fetchWeather, isHoliday } from "../predict/weather.ts";
+import { fetchWeather } from "./weather.ts";
 
 // Mulberry32 deterministic PRNG seeded by restaurant_id + date
 function seededRand(seed: string): () => number {

@@ -87,6 +87,8 @@ export type Database = {
         Row: {
           baseline_hourly_demand: number
           category: string
+          co2_per_unit: number
+          cost_per_unit: number
           created_at: string
           id: string
           location_id: string
@@ -95,6 +97,8 @@ export type Database = {
         Insert: {
           baseline_hourly_demand?: number
           category: string
+          co2_per_unit?: number
+          cost_per_unit?: number
           created_at?: string
           id?: string
           location_id: string
@@ -103,6 +107,8 @@ export type Database = {
         Update: {
           baseline_hourly_demand?: number
           category?: string
+          co2_per_unit?: number
+          cost_per_unit?: number
           created_at?: string
           id?: string
           location_id?: string

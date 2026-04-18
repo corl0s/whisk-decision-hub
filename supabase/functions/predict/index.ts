@@ -295,8 +295,7 @@ Deno.serve(async (req) => {
     const aiBriefing = await generateBriefing({
       event: activeEvent ? { name: activeEvent.name, distance_km: Number(activeDistance.toFixed(2)) } : null,
       location: location.name,
-      shift: shiftDef.display,
-      surge_pct: 0, // no longer surfaced
+      day: shiftDate,
       top_prep: sortedByVolume[0],
       cut_prep: sortedByVolume[sortedByVolume.length - 1],
     });

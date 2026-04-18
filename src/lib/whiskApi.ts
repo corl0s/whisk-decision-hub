@@ -14,12 +14,12 @@ export interface PredictResponse {
       academic: { status: string };
     };
   };
-  demandSeries: Array<{ hour: string; baseline: number; predicted: number }>;
+  demandSeries: Array<{ hour: string; predicted: number }>;
   prepItems: Array<{
     id: string;
     name: string;
     units: number;
-    uplift: number;
+    ratio: number;
     status: PrepStatus;
     note: string;
   }>;
@@ -34,9 +34,9 @@ export interface PredictResponse {
   savings: { wastePreventedWeek: number; projectedMonthly: number; co2OffsetKg: number };
   aiBriefing: string;
   meta: {
-    baselineTotal: number;
     predictedTotal: number;
-    upliftOrders: number;
+    peakHour: string | null;
+    peakOrders: number;
     eventActive: boolean;
     model?: {
       version: string;

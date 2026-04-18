@@ -17,9 +17,16 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const MODEL_URL = `${SUPABASE_URL}/storage/v1/object/public/model-artifacts/lightgbm-v1.json`;
 
-const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
-const HOUR_LABELS = ["8a","9a","10a","11a","12p","1p","2p","3p","4p","5p","6p","7p"];
-const SHIFT_HOURS = [11, 12, 13]; // 11a-2p
+const HOURS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+const HOUR_LABELS = ["7a","8a","9a","10a","11a","12p","1p","2p","3p","4p","5p","6p","7p"];
+
+// Shift definitions — must mirror src/lib/shifts.ts
+const SHIFTS: Record<string, { hours: number[]; display: string; short: string }> = {
+  breakfast: { hours: [7, 8, 9, 10],   display: "7:00 AM – 11:00 AM", short: "7-11a" },
+  lunch:     { hours: [11, 12, 13],    display: "11:00 AM – 2:00 PM", short: "11a-2p" },
+  afternoon: { hours: [14, 15, 16],    display: "2:00 PM – 5:00 PM",  short: "2-5p" },
+  dinner:    { hours: [17, 18, 19],    display: "5:00 PM – 8:00 PM",  short: "5-8p" },
+};
 
 // Cache the model in module memory (warm starts skip the fetch)
 let modelCache: ModelArtifact | null = null;
@@ -45,6 +52,9 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const locationId: string = body.location_id ?? "11111111-1111-1111-1111-111111111111";
     const shiftDate: string = body.date ?? "2026-04-21";
+    const shiftId: string = body.shift ?? "lunch";
+    const shiftDef = SHIFTS[shiftId] ?? SHIFTS.lunch;
+    const SHIFT_HOURS = shiftDef.hours;
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const [{ data: location }, { data: menu }, { data: events }, model] = await Promise.all([

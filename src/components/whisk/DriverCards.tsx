@@ -45,10 +45,10 @@ export const DriverCards = () => {
             <span className="mx-1">·</span>
             <span className="font-semibold text-danger">{drags} suppressing</span>
             <span className="mx-1">·</span>
-            <span>top model factors today</span>
+            <span>% = each factor's share of demand impact</span>
           </>
         ) : (
-          "Top model feature contributions."
+          "Top model feature contributions to predicted demand."
         )}
       </p>
 

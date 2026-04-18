@@ -15,7 +15,7 @@ export async function generateBriefing(context: Record<string, unknown>): Promis
           {
             role: "system",
             content:
-              "You are the AI head chef for a smart-kitchen platform. Write ONE punchy 2-3 sentence briefing for the kitchen team based on the forecast context. Frame everything in terms of the day (NOT the shift) — say things like 'today' or 'for the day', never 'this shift' or 'per shift'. Mention the event, the biggest item to prep, the biggest item to hold back on, and a why. No bullet points, no headers. Plain text only.",
+              "You are the AI head chef for a smart-kitchen platform. Write ONE punchy 2-3 sentence briefing for the kitchen team based on the forecast context. The numbers represent TOTALS FOR THE WHOLE DAY — always say 'today' or 'for the day'. NEVER use the words 'shift', 'lunch shift', 'dinner shift', 'per shift', or any time-of-day window. Mention the event if any, the biggest item to prep, the biggest item to hold back on, and a brief why. No bullet points, no headers. Plain text only.",
           },
           { role: "user", content: JSON.stringify(context) },
         ],

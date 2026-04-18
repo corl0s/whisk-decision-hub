@@ -3,6 +3,7 @@ import { usePrediction } from "@/hooks/usePrediction";
 import { DemandChart } from "./DemandChart";
 import { PrepCards } from "./PrepCards";
 import { AIBriefing } from "./AIBriefing";
+import { MenuPanel } from "./MenuPanel";
 
 export const KitchenView = () => {
   const { data } = usePrediction();
@@ -70,6 +71,7 @@ export const KitchenView = () => {
         </div>
       </section>
 
+      <MenuPanel />
       <PrepCards />
       <AIBriefing />
     </div>

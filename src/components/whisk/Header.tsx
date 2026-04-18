@@ -1,5 +1,8 @@
-import { ChefHat, LineChart, Activity, CloudSun, GraduationCap, Trophy } from "lucide-react";
+import { ChefHat, LineChart, Activity, CloudSun, GraduationCap, Trophy, LogOut } from "lucide-react";
 import { ShiftDatePicker } from "./ShiftDatePicker";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 type View = "kitchen" | "manager";
 
@@ -35,6 +38,12 @@ const SignalBadge = ({
 };
 
 export const Header = ({ view, onViewChange }: HeaderProps) => {
+  const { signOut } = useAuth();
+  const nav = useNavigate();
+  const handleSignOut = async () => {
+    await signOut();
+    nav("/auth", { replace: true });
+  };
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-xl">
       <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-3 md:px-6">
@@ -88,6 +97,16 @@ export const Header = ({ view, onViewChange }: HeaderProps) => {
             <LineChart className="h-3.5 w-3.5" />
             Manager View
           </button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSignOut}
+            className="ml-1 h-8 gap-1.5 rounded-full px-3 text-xs font-semibold text-muted-foreground hover:text-foreground"
+            title="Sign out"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            <span className="hidden md:inline">Sign out</span>
+          </Button>
         </div>
       </div>
     </header>

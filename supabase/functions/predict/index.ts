@@ -97,12 +97,13 @@ Deno.serve(async (req) => {
       const cells: Cell[] = [];
       for (let i = 0; i < HOURS.length; i++) {
         const hour = HOURS[i];
-        // Average prediction across model items of this category, then scale
-        // by this menu_item's baseline / category mean baseline.
+        // Hour-shape: bell curve peaking at lunchtime (matches training synth).
+        // Used as a lag-feature proxy so the model gets hour-varying input.
+        const hourShape = Math.exp(-Math.pow(hour - 12.5, 2) / 8) + 0.25;
+        const lag = base * hourShape;
         let predSum = 0, baseSum = 0;
         const shapAgg: Record<string, number> = {};
         for (const idx of modelIdxs) {
-          const lag = base; // simple lag estimate
           const featReal = [
             hour, dow, idx, catIndex[cat] ?? 0,
             weather.temp_f, weather.precip, weather.clear,

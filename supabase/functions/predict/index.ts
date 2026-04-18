@@ -221,17 +221,17 @@ Deno.serve(async (req) => {
       .sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution))
       .slice(0, 5);
 
-    const baselineTotal = demandSeries.reduce((s, d) => s + d.baseline, 0);
     const predictedTotal = demandSeries.reduce((s, d) => s + d.predicted, 0);
-    const sortedByUplift = [...prepItems].sort((a, b) => b.uplift - a.uplift);
+    const peakHour = demandSeries.reduce((p, d) => d.predicted > p.predicted ? d : p, demandSeries[0]);
+    const sortedByVolume = [...prepItems].sort((a, b) => b.units - a.units);
 
     const aiBriefing = await generateBriefing({
       event: activeEvent ? { name: activeEvent.name, distance_km: Number(activeDistance.toFixed(2)) } : null,
       location: location.name,
       shift: "11:00 AM – 2:00 PM",
-      surge_pct: Math.round(((predictedTotal - baselineTotal) / Math.max(1, baselineTotal)) * 100),
-      top_prep: sortedByUplift[0],
-      cut_prep: sortedByUplift[sortedByUplift.length - 1],
+      surge_pct: 0, // no longer surfaced
+      top_prep: sortedByVolume[0],
+      cut_prep: sortedByVolume[sortedByVolume.length - 1],
     });
 
     const payload = {
@@ -254,9 +254,9 @@ Deno.serve(async (req) => {
       savings: { wastePreventedWeek: 340, projectedMonthly: 2800, co2OffsetKg: 420 },
       aiBriefing,
       meta: {
-        baselineTotal,
         predictedTotal,
-        upliftOrders: predictedTotal - baselineTotal,
+        peakHour: peakHour?.hour ?? null,
+        peakOrders: peakHour?.predicted ?? 0,
         eventActive: !!activeEvent,
         model: {
           version: model.version,

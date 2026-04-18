@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_predictions: {
+        Row: {
+          created_at: string
+          id: string
+          payload: Json
+          predicted_covers: number
+          prediction_date: string
+          recommended_qty: number
+          restaurant_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payload: Json
+          predicted_covers: number
+          prediction_date: string
+          recommended_qty: number
+          restaurant_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          predicted_covers?: number
+          prediction_date?: string
+          recommended_qty?: number
+          restaurant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_predictions_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           created_at: string
@@ -200,15 +238,135 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      restaurants: {
+        Row: {
+          avg_order_size: number | null
+          avg_rating: number | null
+          created_at: string
+          delivery_ratio: number | null
+          dist_to_boston_center_km: number | null
+          dist_to_marathon_km: number | null
+          has_delivery: boolean | null
+          id: string
+          is_fast_food: boolean | null
+          is_health_focused: boolean | null
+          lat: number | null
+          lng: number | null
+          name: string
+          neighborhood: string | null
+          owner_user_id: string
+          price_tier: number | null
+          seating_capacity: number | null
+          setup_complete: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          avg_order_size?: number | null
+          avg_rating?: number | null
+          created_at?: string
+          delivery_ratio?: number | null
+          dist_to_boston_center_km?: number | null
+          dist_to_marathon_km?: number | null
+          has_delivery?: boolean | null
+          id?: string
+          is_fast_food?: boolean | null
+          is_health_focused?: boolean | null
+          lat?: number | null
+          lng?: number | null
+          name?: string
+          neighborhood?: string | null
+          owner_user_id: string
+          price_tier?: number | null
+          seating_capacity?: number | null
+          setup_complete?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          avg_order_size?: number | null
+          avg_rating?: number | null
+          created_at?: string
+          delivery_ratio?: number | null
+          dist_to_boston_center_km?: number | null
+          dist_to_marathon_km?: number | null
+          has_delivery?: boolean | null
+          id?: string
+          is_fast_food?: boolean | null
+          is_health_focused?: boolean | null
+          lat?: number | null
+          lng?: number | null
+          name?: string
+          neighborhood?: string | null
+          owner_user_id?: string
+          price_tier?: number | null
+          seating_capacity?: number | null
+          setup_complete?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "owner" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -335,6 +493,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["owner", "admin"],
+    },
   },
 } as const

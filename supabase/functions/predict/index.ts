@@ -57,12 +57,22 @@ Deno.serve(async (req) => {
     const SHIFT_HOURS = shiftDef.hours;
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-    const [{ data: location }, { data: menu }, { data: events }, model] = await Promise.all([
+    const [{ data: location }, { data: menu }, { data: events }, { data: inventoryLevels }, model] = await Promise.all([
       supabase.from("locations").select("*").eq("id", locationId).single(),
       supabase.from("menu_items").select("*").eq("location_id", locationId),
       supabase.from("events").select("*").eq("event_date", shiftDate),
+      supabase.from("inventory_levels").select("*"),
       loadModel(),
     ]);
+    const stockByItem: Record<string, { stock: number; par: number; unit: string; lastCounted: string }> = {};
+    for (const inv of (inventoryLevels ?? []) as any[]) {
+      stockByItem[inv.menu_item_id] = {
+        stock: Number(inv.current_stock),
+        par: Number(inv.par_level),
+        unit: inv.unit,
+        lastCounted: inv.last_counted_at,
+      };
+    }
 
     if (!location) {
       return new Response(JSON.stringify({ error: "location not found" }),

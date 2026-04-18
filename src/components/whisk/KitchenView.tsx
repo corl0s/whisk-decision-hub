@@ -7,7 +7,9 @@ import { AIBriefing } from "./AIBriefing";
 export const KitchenView = () => {
   const { data } = usePrediction();
   const scenario = data?.scenario;
-  const uplift = data?.meta.upliftOrders ?? 0;
+  const peakHour = data?.meta.peakHour;
+  const peakOrders = data?.meta.peakOrders ?? 0;
+  const predictedTotal = data?.meta.predictedTotal ?? 0;
   const model = data?.meta.model;
 
   return (

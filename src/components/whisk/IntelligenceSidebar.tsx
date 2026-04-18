@@ -1,14 +1,9 @@
-import { Calculator, MapPin } from "lucide-react";
-import { useState } from "react";
+import { MapPin } from "lucide-react";
 import { usePrediction } from "@/hooks/usePrediction";
 import { DriverCards } from "./DriverCards";
 
 export const IntelligenceSidebar = () => {
-  const [locations, setLocations] = useState(20);
   const { data } = usePrediction();
-  const monthlySavings = data?.savings.projectedMonthly ?? 2800;
-  const annualPerLocation = monthlySavings * 12;
-  const total = locations * annualPerLocation;
 
   return (
     <aside className="space-y-5">
@@ -41,32 +36,7 @@ export const IntelligenceSidebar = () => {
           </p>
         </div>
       </div>
-
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-elev-sm">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-success-soft">
-            <Calculator className="h-3.5 w-3.5 text-success" />
-          </div>
-          <h3 className="text-sm font-bold text-foreground">Waste Calculator</h3>
-        </div>
-        <p className="mt-1 text-xs text-muted-foreground">Estimate impact at scale.</p>
-
-        <div className="mt-4">
-          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
-            <span>Locations</span>
-            <span className="rounded-md bg-muted px-2 py-0.5 font-bold text-foreground">{locations}</span>
-          </div>
-          <input type="range" min={1} max={100} value={locations} onChange={(e) => setLocations(Number(e.target.value))} className="mt-2 w-full accent-[hsl(var(--success))]" />
-        </div>
-
-        <div className="mt-4 rounded-xl bg-success-soft p-4">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-success/80">Annual loss prevented</div>
-          <div className="mt-1 text-3xl font-bold tracking-tight text-success">${total.toLocaleString()}</div>
-          <p className="mt-1 text-[11px] font-medium text-success/80">
-            For a {locations}-location chain at ${annualPerLocation.toLocaleString()}/yr each.
-          </p>
-        </div>
-      </div>
     </aside>
   );
 };
+

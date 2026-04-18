@@ -1,5 +1,5 @@
 import { CheckCircle2, AlertTriangle, Send, TrendingDown, DollarSign, Leaf, Package, Clock } from "lucide-react";
-import { forwardRef, useMemo, useState } from "react";
+import { forwardRef, useState } from "react";
 import { usePrediction } from "@/hooks/usePrediction";
 
 function timeAgo(iso: string | null): string {

@@ -84,7 +84,11 @@ Deno.serve(async (req) => {
     const grid: Record<string, Cell[]> = {}; // menu_item.id -> [12 hours]
 
     const eventCtx = activeEvent
-      ? { dist_km: Number(activeDistance.toFixed(2)), attend: Number(activeEvent.expected_attendance ?? 15000) }
+      ? {
+          dist_km: Number(activeDistance.toFixed(2)),
+          // Clamp to training range (synthetic data was 8k-25k attendance)
+          attend: Math.min(25000, Number(activeEvent.expected_attendance ?? 15000)),
+        }
       : { dist_km: 9.99, attend: 0 };
 
     // Synthetic weather (clear, 58F) — would come from API in prod

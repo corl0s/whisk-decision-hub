@@ -7,7 +7,9 @@ import { AIBriefing } from "./AIBriefing";
 export const KitchenView = () => {
   const { data } = usePrediction();
   const scenario = data?.scenario;
-  const uplift = data?.meta.upliftOrders ?? 0;
+  const peakHour = data?.meta.peakHour;
+  const peakOrders = data?.meta.peakOrders ?? 0;
+  const predictedTotal = data?.meta.predictedTotal ?? 0;
   const model = data?.meta.model;
 
   return (
@@ -33,9 +35,15 @@ export const KitchenView = () => {
               </div>
             </div>
 
-            <div className="mt-6 flex items-baseline gap-2 rounded-xl border border-success/20 bg-success-soft px-4 py-3">
-              <span className="text-3xl font-bold text-success">{uplift >= 0 ? "+" : ""}{uplift}</span>
-              <span className="text-xs font-semibold text-success">predicted orders vs. baseline</span>
+            <div className="mt-6 grid grid-cols-2 gap-2">
+              <div className="rounded-xl border border-success/20 bg-success-soft px-4 py-3">
+                <div className="text-2xl font-bold text-success">{predictedTotal}</div>
+                <div className="text-[11px] font-semibold text-success">total predicted orders</div>
+              </div>
+              <div className="rounded-xl border border-accent/20 bg-accent/10 px-4 py-3">
+                <div className="text-2xl font-bold text-accent">{peakOrders}<span className="ml-1 text-sm">@{peakHour ?? "—"}</span></div>
+                <div className="text-[11px] font-semibold text-accent">peak hour volume</div>
+              </div>
             </div>
 
             {model && (
@@ -52,16 +60,10 @@ export const KitchenView = () => {
           <div className="p-5">
             <div className="mb-2 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-foreground">Hourly Demand Forecast</h2>
-              <div className="flex items-center gap-3 text-[11px] font-medium">
-                <span className="flex items-center gap-1.5 text-muted-foreground">
-                  <span className="h-0.5 w-3 border-t-2 border-dashed border-muted-foreground" />
-                  Baseline
-                </span>
-                <span className="flex items-center gap-1.5 text-accent">
-                  <span className="h-0.5 w-3 bg-accent" />
-                  Predicted
-                </span>
-              </div>
+              <span className="flex items-center gap-1.5 text-[11px] font-medium text-accent">
+                <span className="h-0.5 w-3 bg-accent" />
+                Predicted Orders
+              </span>
             </div>
             <DemandChart />
           </div>

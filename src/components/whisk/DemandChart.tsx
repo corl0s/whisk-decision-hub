@@ -13,10 +13,6 @@ export const DemandChart = () => {
               <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.45} />
               <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0} />
             </linearGradient>
-            <linearGradient id="baseGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.25} />
-              <stop offset="100%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0} />
-            </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
           <XAxis dataKey="hour" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -31,8 +27,7 @@ export const DemandChart = () => {
             }}
             labelStyle={{ color: "hsl(var(--foreground))", fontWeight: 600 }}
           />
-          <Area type="monotone" dataKey="baseline" name="Baseline Monday" stroke="hsl(var(--muted-foreground))" strokeWidth={2} strokeDasharray="4 4" fill="url(#baseGrad)" />
-          <Area type="monotone" dataKey="predicted" name="Predicted" stroke="hsl(var(--accent))" strokeWidth={2.5} fill="url(#predGrad)" />
+          <Area type="monotone" dataKey="predicted" name="Predicted Orders" stroke="hsl(var(--accent))" strokeWidth={2.5} fill="url(#predGrad)" />
         </AreaChart>
       </ResponsiveContainer>
     </div>

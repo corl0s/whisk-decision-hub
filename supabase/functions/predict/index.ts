@@ -148,32 +148,33 @@ Deno.serve(async (req) => {
       grid[m.id] = cells;
     }
 
-    // Aggregate hourly demand series (sum across menu)
+    // Aggregate hourly demand series (sum across menu) — single forecast line
     const demandSeries = HOURS.map((_h, i) => {
-      let baseline = 0, predicted = 0;
+      let predicted = 0;
       for (const m of menu ?? []) {
-        baseline += grid[m.id][i].baseline;
         predicted += grid[m.id][i].predicted;
       }
-      return { hour: HOUR_LABELS[i], baseline: Math.round(baseline), predicted: Math.round(predicted) };
+      return { hour: HOUR_LABELS[i], predicted: Math.round(predicted) };
     });
 
-    // Per-item prep recommendations for the 11a-2p shift
+    // Per-item prep recommendations for the 11a-2p shift.
+    // Status & note now driven by absolute volume vs. that item's typical baseline_hourly_demand,
+    // not by event-uplift attribution.
     const shiftIdxs = SHIFT_HOURS.map(h => HOURS.indexOf(h));
     const prepItems = (menu ?? []).map((m: any) => {
       const cells = grid[m.id];
       const pred = shiftIdxs.reduce((s, i) => s + cells[i].predicted, 0);
-      const base = shiftIdxs.reduce((s, i) => s + cells[i].baseline, 0);
       const units = Math.round(pred);
-      const uplift = Math.round(((pred - base) / Math.max(1, base)) * 100);
+      const typical = Number(m.baseline_hourly_demand) * SHIFT_HOURS.length;
+      const ratio = units / Math.max(1, typical);
       let status: "critical" | "high" | "low" = "high";
-      if (uplift >= 80) status = "critical";
-      else if (uplift < 0) status = "low";
+      if (ratio >= 1.6) status = "critical";
+      else if (ratio < 0.7) status = "low";
       const note =
-        uplift >= 80 ? "Runners + spectators"
-        : uplift < 0 ? "Streets closed to delivery"
+        ratio >= 1.6 ? "Heavy volume — prep extra"
+        : ratio < 0.7 ? "Slow shift — trim prep"
         : "Healthy steady demand";
-      return { id: m.id, name: m.name, units, uplift, status, note };
+      return { id: m.id, name: m.name, units, ratio: Number(ratio.toFixed(2)), status, note };
     });
 
     // Inventory recs
@@ -221,17 +222,17 @@ Deno.serve(async (req) => {
       .sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution))
       .slice(0, 5);
 
-    const baselineTotal = demandSeries.reduce((s, d) => s + d.baseline, 0);
     const predictedTotal = demandSeries.reduce((s, d) => s + d.predicted, 0);
-    const sortedByUplift = [...prepItems].sort((a, b) => b.uplift - a.uplift);
+    const peakHour = demandSeries.reduce((p, d) => d.predicted > p.predicted ? d : p, demandSeries[0]);
+    const sortedByVolume = [...prepItems].sort((a, b) => b.units - a.units);
 
     const aiBriefing = await generateBriefing({
       event: activeEvent ? { name: activeEvent.name, distance_km: Number(activeDistance.toFixed(2)) } : null,
       location: location.name,
       shift: "11:00 AM – 2:00 PM",
-      surge_pct: Math.round(((predictedTotal - baselineTotal) / Math.max(1, baselineTotal)) * 100),
-      top_prep: sortedByUplift[0],
-      cut_prep: sortedByUplift[sortedByUplift.length - 1],
+      surge_pct: 0, // no longer surfaced
+      top_prep: sortedByVolume[0],
+      cut_prep: sortedByVolume[sortedByVolume.length - 1],
     });
 
     const payload = {
@@ -254,9 +255,9 @@ Deno.serve(async (req) => {
       savings: { wastePreventedWeek: 340, projectedMonthly: 2800, co2OffsetKg: 420 },
       aiBriefing,
       meta: {
-        baselineTotal,
         predictedTotal,
-        upliftOrders: predictedTotal - baselineTotal,
+        peakHour: peakHour?.hour ?? null,
+        peakOrders: peakHour?.predicted ?? 0,
         eventActive: !!activeEvent,
         model: {
           version: model.version,

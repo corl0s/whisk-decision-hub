@@ -319,10 +319,10 @@ Deno.serve(async (req) => {
       featureContribution,
       activeSignals,
       savings: {
-        // Hardcoded demo numbers
-        wastePreventedWeek: 420,
-        projectedMonthly:   1820,
-        co2OffsetKg:        95,
+        // Demo numbers — tuned to a mid-size Boston restaurant (~250 covers/day)
+        wastePreventedWeek: 1150,
+        projectedMonthly:   4800,
+        co2OffsetKg:        310,
       },
       aiBriefing,
       meta: {

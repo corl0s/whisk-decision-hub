@@ -338,9 +338,9 @@ Deno.serve(async (req) => {
       activeSignals,
       savings: {
         // Hardcoded demo numbers
-        wastePreventedWeek: 420,
-        projectedMonthly: 1820,
-        co2OffsetKg: 95,
+        wastePreventedWeek: 490,
+        projectedMonthly: 1920,
+        co2OffsetKg: 97,
       },
       aiBriefing,
       meta: {

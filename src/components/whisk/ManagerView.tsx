@@ -1,6 +1,16 @@
-import { CheckCircle2, AlertTriangle, Send, TrendingDown, DollarSign, Leaf } from "lucide-react";
-import { forwardRef, useState } from "react";
+import { CheckCircle2, AlertTriangle, Send, TrendingDown, DollarSign, Leaf, Package, Clock } from "lucide-react";
+import { forwardRef, useMemo, useState } from "react";
 import { usePrediction } from "@/hooks/usePrediction";
+
+function timeAgo(iso: string | null): string {
+  if (!iso) return "—";
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.round(diffMs / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.round(hrs / 24)}d ago`;
+}
 
 interface SavingsCardProps {
   icon: React.ComponentType<{ className?: string }>;

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 
 export interface TopEvent {
   title: string;
@@ -16,12 +15,6 @@ export function useTopEvent(date: Date) {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    supabase.functions
-      .invoke("top-event", { method: "GET" as any, body: undefined as any })
-      // .invoke doesn't pass query params cleanly; build URL ourselves
-      .then(() => {})
-      .catch(() => {});
-
     const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/top-event?date=${iso}`;
     fetch(url, {
       headers: {
@@ -39,7 +32,6 @@ export function useTopEvent(date: Date) {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-
     return () => {
       cancelled = true;
     };
